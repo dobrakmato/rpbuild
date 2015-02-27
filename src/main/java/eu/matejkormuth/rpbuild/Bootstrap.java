@@ -21,6 +21,10 @@ package eu.matejkormuth.rpbuild;
 
 import java.io.File;
 
+/**
+ * Represents class with application entry point that handles startup logic of
+ * application.
+ */
 public class Bootstrap {
 	public static void main(String[] args) {
 		if (args.length == 0) {

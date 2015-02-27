@@ -40,6 +40,10 @@ import eu.matejkormuth.rpbuild.compilers.JsonCompressor;
 import eu.matejkormuth.rpbuild.generators.PackMcMetaGenerator;
 import eu.matejkormuth.rpbuild.generators.StarvingSoundsJsonGenerator;
 
+/**
+ * Represents main part of build system. Assembles and manages build process and
+ * logging.
+ */
 public class Assembler {
 	private static final Logger log = LoggerFactory.getLogger(Assembler.class);
 
@@ -187,8 +191,9 @@ public class Assembler {
 
 		try {
 			int count = 0;
-			ZipArchive zipper = new ZipArchive(this.options.root.toAbsolutePath(),
-					new File(this.options.zipName));
+			ZipArchive zipper = new ZipArchive(
+					this.options.root.toAbsolutePath(), new File(
+							this.options.zipName));
 			for (Path path : this.fileFinder.getPaths()) {
 				if (!isFiltered(path)) {
 					zipper.addFile(path);
