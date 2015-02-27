@@ -76,6 +76,6 @@ public abstract class Component {
 	 * @return absolute Path
 	 */
 	public Path getPath(String relative) {
-		return this.assembler.getRootPath().resolve(Paths.get(relative));
+		return this.assembler.getSourcePath().resolve(Paths.get(relative));
 	}
 }

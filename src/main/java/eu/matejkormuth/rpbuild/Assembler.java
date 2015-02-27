@@ -282,7 +282,11 @@ public class Assembler {
 		return Charset.forName(this.options.encoding);
 	}
 
-	public Path getRootPath() {
+	public Path getSourcePath() {
 		return this.options.root;
+	}
+
+	public Path getTargetPath() {
+		return this.options.target;
 	}
 }

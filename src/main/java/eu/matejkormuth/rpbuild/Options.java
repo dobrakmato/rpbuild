@@ -35,4 +35,5 @@ public class Options {
 	public String resourcePackDescription = null;
 	public boolean ignoreGit = true;
 	public String encoding = "UTF-8";
+	public Path target = new File("./target/").toPath();
 }
