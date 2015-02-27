@@ -19,20 +19,54 @@
  */
 package eu.matejkormuth.rpbuild;
 
+/**
+ * Represents step in build. This class is abstract. You better use
+ * <b>compile</b> or <b>generate</b> static methods to create new buildsteps.
+ */
 public abstract class BuildStep {
-
+	/**
+	 * Creates new <b>compile</b> build step with specified Compiler and file
+	 * type that this compiler compiles.
+	 * 
+	 * @param compiler
+	 *            the compiler
+	 * @param fileType
+	 *            file type (extension) associated with this compiler
+	 * @return
+	 */
 	public static BuildStep compile(Compiler compiler, String fileType) {
 		return new CompileBuildStep(compiler, fileType);
 	}
 
+	/**
+	 * Creates new <b>compile</b> build step with specified Compiler and file
+	 * type that this compiler compiles.
+	 * 
+	 * @param compiler
+	 *            the compiler
+	 * @param fileTypes
+	 *            file types (extensions) associated with this compiler
+	 * @return build step
+	 */
 	public static BuildStep compile(Compiler compiler, String... fileTypes) {
 		return new CompileBuildStep(compiler, fileTypes);
 	}
 
+	/**
+	 * Creates new <b>generate</b> build step with specified generator.
+	 * 
+	 * @param generator
+	 *            the generator
+	 * @return build step
+	 */
 	public static BuildStep generate(Generator generator) {
 		return new GenerateBuildStep(generator);
 	}
 
+	/**
+	 * {@link BuildStep} that represents <b>compile</b> build phase in which the
+	 * specified file types are compiled using {@link Compiler}.
+	 */
 	public static class CompileBuildStep extends BuildStep {
 		private Compiler compiler;
 		private String[] fileTypes;
@@ -56,6 +90,10 @@ public abstract class BuildStep {
 		}
 	}
 
+	/**
+	 * {@link BuildStep} that represents <b>generate</b> build phase in which
+	 * the files are generated using {@link Generator}s.
+	 */
 	public static class GenerateBuildStep extends BuildStep {
 		private Generator generator;
 

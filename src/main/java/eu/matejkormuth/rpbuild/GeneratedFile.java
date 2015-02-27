@@ -19,6 +19,9 @@
  */
 package eu.matejkormuth.rpbuild;
 
+/**
+ * Represents files created by {@link Generator}.
+ */
 public class GeneratedFile {
 	private String name;
 	private byte[] contents;

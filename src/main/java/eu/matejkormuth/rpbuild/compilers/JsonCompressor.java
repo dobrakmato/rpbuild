@@ -26,6 +26,10 @@ import java.nio.file.StandardOpenOption;
 
 import eu.matejkormuth.rpbuild.Compiler;
 
+/**
+ * Represents compiler that compresses json files by removing all whitespace
+ * from them.
+ */
 public class JsonCompressor extends Compiler {
 	@Override
 	public void compile(Path file) {

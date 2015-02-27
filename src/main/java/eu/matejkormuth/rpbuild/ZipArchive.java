@@ -31,13 +31,25 @@ import java.util.zip.ZipOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Zipper {
-	private static final Logger log = LoggerFactory.getLogger(Zipper.class);
+/**
+ * Class that creates zip file from specified input files.
+ */
+public class ZipArchive {
+	private static final Logger log = LoggerFactory.getLogger(ZipArchive.class);
 
 	private ZipOutputStream stream;
 	private Path absolute;
 
-	public Zipper(Path absolutePath, File out) {
+	/**
+	 * Creates new instance of zip archive.
+	 * 
+	 * @param absolutePath
+	 *            absolute path that will be used to resolve path when calling
+	 *            <code>addFile(Path relative)</code>.
+	 * @param out
+	 *            archive file
+	 */
+	public ZipArchive(Path absolutePath, File out) {
 		try {
 			this.stream = new ZipOutputStream(new FileOutputStream(out));
 			this.stream
@@ -51,6 +63,13 @@ public class Zipper {
 		}
 	}
 
+	/**
+	 * Adds file at specified path to this zip archive.
+	 * 
+	 * @param path
+	 *            path of file to be added
+	 * @throws IOException
+	 */
 	public void addFile(Path path) throws IOException {
 		log.debug("Adding file: {}", path);
 
@@ -62,6 +81,9 @@ public class Zipper {
 		this.stream.closeEntry();
 	}
 
+	/**
+	 * Closes this zip archive and underlying ZipOutputStream.
+	 */
 	public void close() {
 		try {
 			this.stream.close();

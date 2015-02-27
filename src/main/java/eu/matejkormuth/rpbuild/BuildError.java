@@ -19,6 +19,9 @@
  */
 package eu.matejkormuth.rpbuild;
 
+/**
+ * Represents error in resource pack build process.
+ */
 public class BuildError extends RuntimeException {
 	private static final long serialVersionUID = -4729716683932577398L;
 

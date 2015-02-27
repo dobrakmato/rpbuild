@@ -19,6 +19,9 @@
  */
 package eu.matejkormuth.rpbuild;
 
+/**
+ * Class helper that converts Strings to java primitive types.
+ */
 public class Conv {
 	public static final boolean toBool(String s) {
 		return Boolean.valueOf(s).booleanValue();

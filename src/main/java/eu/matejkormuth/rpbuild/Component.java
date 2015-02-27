@@ -26,7 +26,14 @@ import java.nio.file.Paths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-public class Component {
+/**
+ * Abstract class that represents build system component. Contains some useful
+ * methods.
+ * 
+ * @see Compiler
+ * @see Generator
+ */
+public abstract class Component {
 	protected static Logger log;
 
 	private Assembler assembler;
@@ -43,14 +50,31 @@ public class Component {
 		this.assembler = assembler;
 	}
 
+	/**
+	 * Returns current build options.
+	 * 
+	 * @return options of the current build
+	 */
 	public Options getOptions() {
 		return this.assembler.getOptions();
 	}
 
+	/**
+	 * Returns Charset used for this build.
+	 * 
+	 * @return build charset
+	 */
 	public Charset getCharset() {
 		return this.assembler.getCharset();
 	}
 
+	/**
+	 * Returns absolute path from resourcepack root and relative path string.
+	 * 
+	 * @param relative
+	 *            relative path as string
+	 * @return absolute Path
+	 */
 	public Path getPath(String relative) {
 		return this.assembler.getRootPath().resolve(Paths.get(relative));
 	}

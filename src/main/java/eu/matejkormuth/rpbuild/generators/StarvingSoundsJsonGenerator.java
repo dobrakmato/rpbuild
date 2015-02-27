@@ -30,7 +30,10 @@ import org.json.JSONObject;
 import eu.matejkormuth.rpbuild.GeneratedFile;
 import eu.matejkormuth.rpbuild.Generator;
 
-public class SoundsJsonGenerator extends Generator {
+/**
+ * Represents custom <code>sounds.json</code> file generator.
+ */
+public class StarvingSoundsJsonGenerator extends Generator {
 	private JSONObject root;
 
 	public GeneratedFile generate() {

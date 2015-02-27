@@ -23,5 +23,10 @@ package eu.matejkormuth.rpbuild;
  * Specifies object that generates file(s).
  */
 public abstract class Generator extends Component {
+	/**
+	 * Starts generation process of this file generator instance.
+	 * 
+	 * @return result of generation process as {@link GeneratedFile}.
+	 */
 	public abstract GeneratedFile generate();
 }

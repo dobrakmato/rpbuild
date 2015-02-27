@@ -25,5 +25,11 @@ import java.nio.file.Path;
  * Represents object that build some type of file(s).
  */
 public abstract class Compiler extends Component {
+	/**
+	 * Compiles specified source file.
+	 * 
+	 * @param file
+	 *            file to compile
+	 */
 	public abstract void compile(Path file);
 }

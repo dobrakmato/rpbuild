@@ -22,9 +22,10 @@ package eu.matejkormuth.rpbuild;
 import java.io.File;
 import java.nio.file.Path;
 
+/**
+ * Represents options of build / build configuration.
+ */
 public class Options {
-	public static final Options DEFAULTS = new Options();
-
 	public boolean optimizeFiles = true;
 	public String projectName = "ResourcePack";
 	public Path root = new File(".").toPath();

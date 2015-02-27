@@ -25,9 +25,18 @@ import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.util.Properties;
 
+/**
+ * Represents class that is used to parse {@link Options} file.
+ */
 public class OptionsParser extends Properties {
 	private static final long serialVersionUID = 1L;
 
+	/**
+	 * Creates new parser from specified file.
+	 * 
+	 * @param file
+	 *            file to load
+	 */
 	public OptionsParser(File file) {
 		super();
 		try {
@@ -39,6 +48,12 @@ public class OptionsParser extends Properties {
 		}
 	}
 
+	/**
+	 * Returns {@link Options} object that file passed to this parser
+	 * represents.
+	 * 
+	 * @return options instance
+	 */
 	public Options parse() {
 		Options o = new Options();
 		o.optimizeFiles = Conv

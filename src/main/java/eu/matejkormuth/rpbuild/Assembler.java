@@ -38,7 +38,7 @@ import eu.matejkormuth.rpbuild.BuildStep.CompileBuildStep;
 import eu.matejkormuth.rpbuild.BuildStep.GenerateBuildStep;
 import eu.matejkormuth.rpbuild.compilers.JsonCompressor;
 import eu.matejkormuth.rpbuild.generators.PackMcMetaGenerator;
-import eu.matejkormuth.rpbuild.generators.SoundsJsonGenerator;
+import eu.matejkormuth.rpbuild.generators.StarvingSoundsJsonGenerator;
 
 public class Assembler {
 	private static final Logger log = LoggerFactory.getLogger(Assembler.class);
@@ -59,7 +59,7 @@ public class Assembler {
 		this.options = options;
 
 		this.addBuildStep(BuildStep.generate(new PackMcMetaGenerator()));
-		this.addBuildStep(BuildStep.generate(new SoundsJsonGenerator()));
+		this.addBuildStep(BuildStep.generate(new StarvingSoundsJsonGenerator()));
 		this.addBuildStep(BuildStep.compile(new JsonCompressor(), ".json"));
 
 		this.fileFinder = new FileFinder();
@@ -187,7 +187,7 @@ public class Assembler {
 
 		try {
 			int count = 0;
-			Zipper zipper = new Zipper(this.options.root.toAbsolutePath(),
+			ZipArchive zipper = new ZipArchive(this.options.root.toAbsolutePath(),
 					new File(this.options.zipName));
 			for (Path path : this.fileFinder.getPaths()) {
 				if (!isFiltered(path)) {

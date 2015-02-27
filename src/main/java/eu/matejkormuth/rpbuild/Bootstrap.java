@@ -37,6 +37,9 @@ public class Bootstrap {
 		}
 	}
 
+	/**
+	 * Prints help message to console.
+	 */
 	private static void printHelpMessage() {
 		System.out.println("Incorrect usage!");
 		System.out.println("Usage: rpbuild.jar <buildFile>");

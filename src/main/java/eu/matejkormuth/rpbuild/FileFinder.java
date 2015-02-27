@@ -29,14 +29,30 @@ import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 
+/**
+ * Represents class that walks through file tree and finds relevant project
+ * files.
+ */
 public class FileFinder extends SimpleFileVisitor<Path> {
 	private List<Path> paths;
 	private boolean ignoreGit;
 
+	/**
+	 * Creates new instance of FileFinder.
+	 */
 	public FileFinder() {
 		this.paths = new ArrayList<Path>();
 	}
 
+	/**
+	 * Finds all files in all directories (recursively) from start path. Note
+	 * that this method removes any found files from internal list.
+	 * 
+	 * @param start
+	 *            path to start.
+	 * @return amount of files found
+	 * @throws IOException
+	 */
 	public int find(Path start) throws IOException {
 		this.paths.clear();
 		Files.walkFileTree(start, this);
@@ -54,10 +70,20 @@ public class FileFinder extends SimpleFileVisitor<Path> {
 		return super.visitFile(file, attrs);
 	}
 
+	/**
+	 * Returns list of all found files as Path list.
+	 * 
+	 * @return list of paths
+	 */
 	public List<Path> getPaths() {
 		return paths;
 	}
 
+	/**
+	 * Returns list of all found files as File list.
+	 * 
+	 * @return list of files
+	 */
 	public List<File> getFiles() {
 		List<File> files = new ArrayList<File>(this.paths.size());
 		for (Path p : this.paths) {
@@ -66,6 +92,12 @@ public class FileFinder extends SimpleFileVisitor<Path> {
 		return files;
 	}
 
+	/**
+	 * Returns list of all found files with specified file type (extension) as
+	 * File list.
+	 * 
+	 * @return list of files
+	 */
 	public List<File> getFiles(String fileType) {
 		List<File> files = new ArrayList<File>();
 		for (Path p : this.paths) {
@@ -76,6 +108,12 @@ public class FileFinder extends SimpleFileVisitor<Path> {
 		return files;
 	}
 
+	/**
+	 * Returns list of all found files with specified file type (extension) as
+	 * Path list.
+	 * 
+	 * @return list of paths
+	 */
 	public List<Path> getPaths(String fileExtension) {
 		List<Path> files = new ArrayList<Path>();
 		for (Path p : this.paths) {
@@ -86,6 +124,13 @@ public class FileFinder extends SimpleFileVisitor<Path> {
 		return files;
 	}
 
+	/**
+	 * Specifies whether this finder should ignore possible git folders.
+	 * 
+	 * @param ignoreGit
+	 *            true if this FileFinder should ignore git folder, false
+	 *            otherwise.
+	 */
 	public void setIgnoreGit(boolean ignoreGit) {
 		this.ignoreGit = ignoreGit;
 	}

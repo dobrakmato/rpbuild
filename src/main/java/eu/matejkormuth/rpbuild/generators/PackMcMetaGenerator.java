@@ -27,6 +27,10 @@ import org.json.JSONObject;
 import eu.matejkormuth.rpbuild.GeneratedFile;
 import eu.matejkormuth.rpbuild.Generator;
 
+/**
+ * Represents essentials generator, that creates updated
+ * <code>pack.mcmeta</code> file.
+ */
 public class PackMcMetaGenerator extends Generator {
 	private JSONObject json = new JSONObject();
 
