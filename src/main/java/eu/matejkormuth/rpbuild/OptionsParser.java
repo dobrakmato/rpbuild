@@ -23,6 +23,7 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.nio.file.Paths;
 import java.util.Properties;
 
 /**
@@ -63,8 +64,8 @@ public class OptionsParser extends Properties {
 				".jar;.zip;.php;.rpbuild;.md;.bat;.sh;").split("\\;");
 		o.projectName = this.getProperty("projectName", "resourcePack");
 		o.resourcePackDescription = this.getProperty("resourcePackDescription");
-		// o.root = this.getProperty("root", new File("").toPath()
-		// .toAbsolutePath());
+		o.root = Paths.get(this.getProperty("root", new File(".").toPath()
+				.toAbsolutePath().toString()));
 		o.zipName = this.getProperty("zipName", "resourcePackCompiled.zip");
 		return o;
 	}

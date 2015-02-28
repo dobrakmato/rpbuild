@@ -76,7 +76,7 @@ public class StarvingSoundsJsonGenerator extends Generator {
 		for (int i = 0; i < fileList.length; i++) {
 			File file = fileList[i];
 			if (file.getName().toLowerCase().contains("reload")) {
-				reloadSounds.add("/firearms/" + gunName + "/"
+				reloadSounds.add("firearms/" + gunName + "/"
 						+ file.getName().replace(".ogg", ""));
 			}
 		}
@@ -87,7 +87,7 @@ public class StarvingSoundsJsonGenerator extends Generator {
 		for (int i = 0; i < fileList.length; i++) {
 			File file = fileList[i];
 			if (file.getName().toLowerCase().contains("fire")) {
-				fireSounds.add("/firearms/" + gunName + "/"
+				fireSounds.add("firearms/" + gunName + "/"
 						+ file.getName().replace(".ogg", ""));
 			}
 		}

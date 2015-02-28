@@ -41,8 +41,8 @@ import eu.matejkormuth.rpbuild.generators.PackMcMetaGenerator;
 import eu.matejkormuth.rpbuild.generators.StarvingSoundsJsonGenerator;
 
 /**
- * Represents main part of build system. Assembles and manages build process and
- * logging.
+ * Represents main part of build system. Assembles files and manages build
+ * process and logging.
  */
 public class Assembler {
 	private static final Logger log = LoggerFactory.getLogger(Assembler.class);
