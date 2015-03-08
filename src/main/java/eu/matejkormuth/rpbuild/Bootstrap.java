@@ -27,25 +27,64 @@ import java.io.File;
  */
 public class Bootstrap {
 	public static void main(String[] args) {
-		if (args.length == 0) {
-			printHelpMessage();
-			System.exit(1);
+		// In case out client know how to use application.
+		if (args.length == 1) {
+			runAssembler(args[0]);
+		} else {
+			// Let's find file for him!
+			findDescriptor();
+		}
+	}
+
+	private static void findDescriptor() {
+		String descriptorFile = null;
+		int matchesFound = 0;
+		for (String fileName : new File(".").list()) {
+			if (fileName.equalsIgnoreCase("rpbuild.properties")) {
+				descriptorFile = fileName;
+				matchesFound++;
+			} else if (fileName.endsWith(".rpbuild")) {
+				descriptorFile = fileName;
+				matchesFound++;
+			}
 		}
 
-		if (args.length == 1) {
-			String file = args[0];
-			Options options = new OptionsParser(new File(file)).parse();
-			new Assembler(options).build();
+		if (descriptorFile != null) {
+			if (matchesFound == 1) {
+				System.out
+						.println("Build descriptor not explicitly specified. Using file '"
+								+ descriptorFile
+								+ "' as build descriptor for this build.");
+				runAssembler(descriptorFile);
+			} else {
+				System.out
+						.println("More then one file matches conditions to be a build file in working directory. Please specify build descriptor explicitly!");
+				printUsage();
+				System.exit(1);
+			}
 		} else {
-			printHelpMessage();
+			System.out
+					.println("We were unable to find valid build descriptor in working directory. Please specify it!");
+			printUsage();
+			System.exit(1);
 		}
+	}
+
+	/**
+	 * Starts build process with specified file as build descriptor.
+	 * 
+	 * @param file
+	 *            build descriptor
+	 */
+	private static void runAssembler(String file) {
+		Options options = new OptionsParser(new File(file)).parse();
+		new Assembler(options).build();
 	}
 
 	/**
 	 * Prints help message to console.
 	 */
-	private static void printHelpMessage() {
-		System.out.println("Incorrect usage!");
+	private static void printUsage() {
 		System.out.println("Usage: rpbuild.jar <buildFile>");
 	}
 }
