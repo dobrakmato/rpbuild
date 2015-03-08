@@ -96,6 +96,7 @@ public class Assembler {
 				log.error("Can't complete git pull! Giving up!", e);
 				printBuildEnd(System.currentTimeMillis() - startTime, "FAILURE");
 			}
+			printSeparator();
 		}
 
 		this.findFiles();
