@@ -67,6 +67,7 @@ public class OptionsParser extends Properties {
 		o.root = Paths.get(this.getProperty("root", new File(".").toPath()
 				.toAbsolutePath().toString()));
 		o.zipName = this.getProperty("zipName", "resourcePackCompiled.zip");
+		o.gitPull = Conv.toBool(this.getProperty("gitPull"));
 		return o;
 	}
 }

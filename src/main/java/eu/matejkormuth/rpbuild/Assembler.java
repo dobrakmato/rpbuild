@@ -82,10 +82,23 @@ public class Assembler {
 
 	public void build() {
 		printBuildStart();
+		
+		long startTime = System.currentTimeMillis();
+		
+		if(this.options.gitPull) {
+			log.info("Git pull is enabled in this build! Pulling using shell command (git pull).");
+			try {
+				Process gitProcess = Runtime.getRuntime().exec("git pull");
+			    int exitCode = gitProcess.waitFor();
+			    log.info("Git process exited with exit code {}.",  exitCode);
+			    
+			} catch (IOException | InterruptedException e) {
+				log.error("Can't complete git pull! Giving up!", e);
+				printBuildEnd(System.currentTimeMillis() - startTime, "FAILURE");
+			}
+		}
 
 		this.findFiles();
-
-		long startTime = System.currentTimeMillis();
 
 		try {
 			this.generateFiles();
@@ -101,20 +114,21 @@ public class Assembler {
 
 			this.archive();
 		} catch (BuildError error) {
-			log.error("Build failed!");
 			log.error("Build failed: ", error);
+			printBuildEnd(System.currentTimeMillis() - startTime, "FAILURE");
+			return;
 		}
 
 		long elapsedTime = System.currentTimeMillis() - startTime;
 
-		printBuildEnd(elapsedTime);
+		printBuildEnd(elapsedTime, "SUCCESS");
 	}
 
-	private void printBuildEnd(long elapsedTime) {
+	private void printBuildEnd(long elapsedTime, String status) {
 		printSeparator();
 		log.info("Build of project {} finished!", options.projectName);
 		printSeparator();
-		log.info("Status: SUCCESS");
+		log.info("Status: {}", status);
 		log.info("Memory: {} MB / {} MB",
 				(Runtime.getRuntime().totalMemory() - Runtime.getRuntime()
 						.freeMemory()) / 1024 / 1024, Runtime.getRuntime()

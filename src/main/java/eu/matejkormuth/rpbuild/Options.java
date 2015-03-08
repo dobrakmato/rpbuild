@@ -36,4 +36,5 @@ public class Options {
 	public boolean ignoreGit = true;
 	public String encoding = "UTF-8";
 	public Path target = new File("./target/").toPath();
+	public boolean gitPull = false;
 }
