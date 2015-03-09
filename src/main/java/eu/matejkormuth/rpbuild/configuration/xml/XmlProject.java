@@ -11,6 +11,7 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlRootElement;
 
+import eu.matejkormuth.rpbuild.api.BuildStep;
 import eu.matejkormuth.rpbuild.api.Project;
 import eu.matejkormuth.rpbuild.compilers.JsonCompressor;
 import eu.matejkormuth.rpbuild.generators.PackMcMetaGenerator;
@@ -33,7 +34,7 @@ public class XmlProject implements Project {
 	@XmlElement
 	private Path target = Paths.get("latest.zip");
 	@XmlElement
-	private XmlBuildStep[] build = new XmlBuildStep[] {
+	private BuildStep[] build = new XmlBuildStep[] {
 			new XmlBuildStepGenerate(PackMcMetaGenerator.class),
 			new XmlBuildStepCompile(JsonCompressor.class, ".json") };
 	@XmlElement
@@ -95,7 +96,7 @@ public class XmlProject implements Project {
 	}
 
 	@Override
-	public XmlBuildStep[] getBuild() {
+	public BuildStep[] getBuild() {
 		return build;
 	}
 

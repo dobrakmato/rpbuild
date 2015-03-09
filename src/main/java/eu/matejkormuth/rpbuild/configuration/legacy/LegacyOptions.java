@@ -26,11 +26,10 @@ import java.nio.file.Paths;
 import java.util.Arrays;
 import java.util.List;
 
+import eu.matejkormuth.rpbuild.LegacyBuildStep;
+import eu.matejkormuth.rpbuild.api.BuildStep;
 import eu.matejkormuth.rpbuild.api.Project;
 import eu.matejkormuth.rpbuild.compilers.JsonCompressor;
-import eu.matejkormuth.rpbuild.configuration.xml.XmlBuildStep;
-import eu.matejkormuth.rpbuild.configuration.xml.XmlBuildStepCompile;
-import eu.matejkormuth.rpbuild.configuration.xml.XmlBuildStepGenerate;
 import eu.matejkormuth.rpbuild.generators.PackMcMetaGenerator;
 
 /**
@@ -84,10 +83,10 @@ public class LegacyOptions implements Project {
 	}
 
 	@Override
-	public XmlBuildStep[] getBuild() {
-		return new XmlBuildStep[] {
-				new XmlBuildStepGenerate(PackMcMetaGenerator.class),
-				new XmlBuildStepCompile(JsonCompressor.class, ".json") };
+	public BuildStep[] getBuild() {
+		return new BuildStep[] {
+				LegacyBuildStep.generate(new PackMcMetaGenerator()),
+				LegacyBuildStep.compile(new JsonCompressor(), ".json") };
 	}
 
 	@Override

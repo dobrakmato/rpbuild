@@ -33,12 +33,10 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import eu.matejkormuth.rpbuild.BuildStep.CompileBuildStep;
-import eu.matejkormuth.rpbuild.BuildStep.GenerateBuildStep;
+import eu.matejkormuth.rpbuild.api.BuildStep;
+import eu.matejkormuth.rpbuild.api.BuildStepCompile;
+import eu.matejkormuth.rpbuild.api.BuildStepGenerate;
 import eu.matejkormuth.rpbuild.api.Project;
-import eu.matejkormuth.rpbuild.compilers.JsonCompressor;
-import eu.matejkormuth.rpbuild.generators.PackMcMetaGenerator;
-import eu.matejkormuth.rpbuild.generators.StarvingSoundsJsonGenerator;
 
 /**
  * Represents main part of build system. Assembles files and manages build
@@ -61,10 +59,6 @@ public class Assembler {
 		this.timeSpanFormat = new SimpleDateFormat("mm:ss.SSS");
 
 		this.project = project;
-
-		this.addBuildStep(BuildStep.generate(new PackMcMetaGenerator()));
-		this.addBuildStep(BuildStep.generate(new StarvingSoundsJsonGenerator()));
-		this.addBuildStep(BuildStep.compile(new JsonCompressor(), ".json"));
 
 		this.fileFinder = new FileFinder();
 		this.fileFinder.setIgnoreGit(this.project.isIgnoreGitFolders());
@@ -244,15 +238,21 @@ public class Assembler {
 	}
 
 	public void addBuildStep(BuildStep buildStep) {
-		if (buildStep instanceof CompileBuildStep) {
-			this.addCompileStep(((CompileBuildStep) buildStep).getCompiler(),
-					((CompileBuildStep) buildStep).getFileTypes());
-		} else if (buildStep instanceof GenerateBuildStep) {
-			this.addGenerateStep(((GenerateBuildStep) buildStep).getGenerator());
-		} else {
-			// Unsupported type.
-			log.warn("Tried to register unsupported build step: {}", buildStep
-					.getClass().getSimpleName());
+		try {
+			if (buildStep instanceof BuildStepCompile) {
+				this.addCompileStep(
+						((BuildStepCompile) buildStep).getCompiler(),
+						((BuildStepCompile) buildStep).getFileTypes());
+			} else if (buildStep instanceof BuildStepGenerate) {
+				this.addGenerateStep(((BuildStepGenerate) buildStep)
+						.getGenerator());
+			} else {
+				// Unsupported type.
+				log.warn("Tried to register unsupported build step: {}",
+						buildStep.getClass().getSimpleName());
+			}
+		} catch (Exception e) {
+			throw new BuildError(e);
 		}
 	}
 

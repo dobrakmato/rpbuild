@@ -19,11 +19,11 @@
  */
 package eu.matejkormuth.rpbuild;
 
-/**
- * Represents step in build. This class is abstract. You better use
- * <b>compile</b> or <b>generate</b> static methods to create new buildsteps.
- */
-public abstract class BuildStep {
+import eu.matejkormuth.rpbuild.api.BuildStep;
+import eu.matejkormuth.rpbuild.api.BuildStepCompile;
+import eu.matejkormuth.rpbuild.api.BuildStepGenerate;
+
+public abstract class LegacyBuildStep implements BuildStep {
 	/**
 	 * Creates new <b>compile</b> build step with specified Compiler and file
 	 * type that this compiler compiles.
@@ -34,8 +34,8 @@ public abstract class BuildStep {
 	 *            file type (extension) associated with this compiler
 	 * @return
 	 */
-	public static BuildStep compile(Compiler compiler, String fileType) {
-		return new CompileBuildStep(compiler, fileType);
+	public static LegacyBuildStep compile(Compiler compiler, String fileType) {
+		return new LegacyCompileBuildStep(compiler, fileType);
 	}
 
 	/**
@@ -48,8 +48,9 @@ public abstract class BuildStep {
 	 *            file types (extensions) associated with this compiler
 	 * @return build step
 	 */
-	public static BuildStep compile(Compiler compiler, String... fileTypes) {
-		return new CompileBuildStep(compiler, fileTypes);
+	public static LegacyBuildStep compile(Compiler compiler,
+			String... fileTypes) {
+		return new LegacyCompileBuildStep(compiler, fileTypes);
 	}
 
 	/**
@@ -59,24 +60,25 @@ public abstract class BuildStep {
 	 *            the generator
 	 * @return build step
 	 */
-	public static BuildStep generate(Generator generator) {
-		return new GenerateBuildStep(generator);
+	public static LegacyBuildStep generate(Generator generator) {
+		return new LegacyGenerateBuildStep(generator);
 	}
 
 	/**
-	 * {@link BuildStep} that represents <b>compile</b> build phase in which the
-	 * specified file types are compiled using {@link Compiler}.
+	 * {@link LegacyBuildStep} that represents <b>compile</b> build phase in
+	 * which the specified file types are compiled using {@link Compiler}.
 	 */
-	public static class CompileBuildStep extends BuildStep {
+	public static class LegacyCompileBuildStep extends LegacyBuildStep
+			implements BuildStepCompile {
 		private Compiler compiler;
 		private String[] fileTypes;
 
-		public CompileBuildStep(Compiler compiler, String fileType) {
+		public LegacyCompileBuildStep(Compiler compiler, String fileType) {
 			this.compiler = compiler;
 			this.fileTypes = new String[] { fileType };
 		}
 
-		public CompileBuildStep(Compiler compiler, String... fileTypes) {
+		public LegacyCompileBuildStep(Compiler compiler, String... fileTypes) {
 			this.compiler = compiler;
 			this.fileTypes = fileTypes;
 		}
@@ -91,13 +93,14 @@ public abstract class BuildStep {
 	}
 
 	/**
-	 * {@link BuildStep} that represents <b>generate</b> build phase in which
-	 * the files are generated using {@link Generator}s.
+	 * {@link LegacyBuildStep} that represents <b>generate</b> build phase in
+	 * which the files are generated using {@link Generator}s.
 	 */
-	public static class GenerateBuildStep extends BuildStep {
+	public static class LegacyGenerateBuildStep extends LegacyBuildStep
+			implements BuildStepGenerate {
 		private Generator generator;
 
-		public GenerateBuildStep(Generator generator) {
+		public LegacyGenerateBuildStep(Generator generator) {
 			this.generator = generator;
 		}
 

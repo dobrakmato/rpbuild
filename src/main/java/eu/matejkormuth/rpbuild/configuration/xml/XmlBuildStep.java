@@ -6,10 +6,11 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlSeeAlso;
 
 import eu.matejkormuth.rpbuild.BuildError;
+import eu.matejkormuth.rpbuild.api.BuildStep;
 
 @XmlSeeAlso({ XmlBuildStepCompile.class, XmlBuildStepGenerate.class })
 @XmlAccessorType(XmlAccessType.FIELD)
-public abstract class XmlBuildStep {
+public abstract class XmlBuildStep implements BuildStep {
 	@XmlAttribute(name = "class")
 	protected String clazz;
 

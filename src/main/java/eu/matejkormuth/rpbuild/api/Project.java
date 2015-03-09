@@ -4,8 +4,6 @@ import java.nio.charset.Charset;
 import java.nio.file.Path;
 import java.util.List;
 
-import eu.matejkormuth.rpbuild.configuration.xml.XmlBuildStep;
-
 public interface Project {
 
 	public abstract String getProjectName();
@@ -22,7 +20,7 @@ public interface Project {
 
 	public abstract Path getTarget();
 
-	public abstract XmlBuildStep[] getBuild();
+	public abstract BuildStep[] getBuild();
 	
 	public abstract List<String> getFilters();
 

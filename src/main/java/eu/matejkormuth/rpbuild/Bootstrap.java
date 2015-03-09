@@ -21,8 +21,11 @@ package eu.matejkormuth.rpbuild;
 
 import java.io.File;
 
-import eu.matejkormuth.rpbuild.configuration.legacy.LegacyOptions;
+import javax.xml.bind.JAXBContext;
+
+import eu.matejkormuth.rpbuild.api.Project;
 import eu.matejkormuth.rpbuild.configuration.legacy.LegacyOptionsParser;
+import eu.matejkormuth.rpbuild.configuration.xml.XmlProject;
 
 /**
  * Represents class with application entry point that handles startup logic of
@@ -43,7 +46,10 @@ public class Bootstrap {
 		String descriptorFile = null;
 		int matchesFound = 0;
 		for (String fileName : new File(".").list()) {
-			if (fileName.equalsIgnoreCase("rpbuild.properties")) {
+			if (fileName.equalsIgnoreCase("rpbuild.xml")) {
+				descriptorFile = fileName;
+				matchesFound++;
+			} else if (fileName.equalsIgnoreCase("rpbuild.properties")) {
 				descriptorFile = fileName;
 				matchesFound++;
 			} else if (fileName.endsWith(".rpbuild")) {
@@ -80,8 +86,21 @@ public class Bootstrap {
 	 *            build descriptor
 	 */
 	private static void runAssembler(String file) {
-		LegacyOptions options = new LegacyOptionsParser(new File(file)).parse();
-		new Assembler(options).build();
+		if (file.endsWith(".xml")) {
+			try {
+				JAXBContext context = JAXBContext.newInstance(XmlProject.class);
+				Object projectObj = context.createUnmarshaller().unmarshal(
+						new File(file));
+				Project options = (Project) projectObj;
+				new Assembler(options).build();
+			} catch (Exception e) {
+				System.out.println("Can't start build!");
+				e.printStackTrace();
+			}
+		} else {
+			Project options = new LegacyOptionsParser(new File(file)).parse();
+			new Assembler(options).build();
+		}
 	}
 
 	/**
