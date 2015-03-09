@@ -17,7 +17,7 @@
  *  
  *  "Minecraft" is a trademark of Mojang AB
  */
-package eu.matejkormuth.rpbuild;
+package eu.matejkormuth.rpbuild.configuration.legacy;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -26,10 +26,12 @@ import java.io.IOException;
 import java.nio.file.Paths;
 import java.util.Properties;
 
+import eu.matejkormuth.rpbuild.Conv;
+
 /**
- * Represents class that is used to parse {@link Options} file.
+ * Represents class that is used to parse {@link LegacyOptions} file.
  */
-public class OptionsParser extends Properties {
+public class LegacyOptionsParser extends Properties {
 	private static final long serialVersionUID = 1L;
 
 	/**
@@ -38,7 +40,7 @@ public class OptionsParser extends Properties {
 	 * @param file
 	 *            file to load
 	 */
-	public OptionsParser(File file) {
+	public LegacyOptionsParser(File file) {
 		super();
 		try {
 			this.load(new FileInputStream(file));
@@ -50,13 +52,13 @@ public class OptionsParser extends Properties {
 	}
 
 	/**
-	 * Returns {@link Options} object that file passed to this parser
+	 * Returns {@link LegacyOptions} object that file passed to this parser
 	 * represents.
 	 * 
 	 * @return options instance
 	 */
-	public Options parse() {
-		Options o = new Options();
+	public LegacyOptions parse() {
+		LegacyOptions o = new LegacyOptions();
 		o.optimizeFiles = Conv
 				.toBool(this.getProperty("optimizeFiles", "true"));
 		o.ignoreGit = Conv.toBool(this.getProperty("ignoreGit", "true"));
@@ -66,7 +68,8 @@ public class OptionsParser extends Properties {
 		o.resourcePackDescription = this.getProperty("resourcePackDescription");
 		o.root = Paths.get(this.getProperty("root", new File(".").toPath()
 				.toAbsolutePath().toString()));
-		o.zipName = this.getProperty("zipName", "resourcePackCompiled.zip");
+		o.zipName = Paths.get(this.getProperty("zipName",
+				"resourcePackCompiled.zip"));
 		o.gitPull = Conv.toBool(this.getProperty("gitPull"));
 		return o;
 	}

@@ -21,6 +21,9 @@ package eu.matejkormuth.rpbuild;
 
 import java.io.File;
 
+import eu.matejkormuth.rpbuild.configuration.legacy.LegacyOptions;
+import eu.matejkormuth.rpbuild.configuration.legacy.LegacyOptionsParser;
+
 /**
  * Represents class with application entry point that handles startup logic of
  * application.
@@ -77,7 +80,7 @@ public class Bootstrap {
 	 *            build descriptor
 	 */
 	private static void runAssembler(String file) {
-		Options options = new OptionsParser(new File(file)).parse();
+		LegacyOptions options = new LegacyOptionsParser(new File(file)).parse();
 		new Assembler(options).build();
 	}
 

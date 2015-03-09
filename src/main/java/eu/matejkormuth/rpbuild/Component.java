@@ -26,6 +26,8 @@ import java.nio.file.Paths;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import eu.matejkormuth.rpbuild.api.Project;
+
 /**
  * Abstract class that represents build system component. Contains some useful
  * methods.
@@ -55,8 +57,8 @@ public abstract class Component {
 	 * 
 	 * @return options of the current build
 	 */
-	public Options getOptions() {
-		return this.assembler.getOptions();
+	public Project getProject() {
+		return this.assembler.getProject();
 	}
 
 	/**

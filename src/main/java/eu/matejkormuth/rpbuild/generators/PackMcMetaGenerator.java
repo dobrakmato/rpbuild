@@ -37,12 +37,8 @@ public class PackMcMetaGenerator extends Generator {
 	@Override
 	public GeneratedFile generate() {
 		String description = null;
-		if (this.getOptions().resourcePackDescription != null) {
-			description = this.getOptions().resourcePackDescription;
-		} else {
-			description = this.getOptions().projectName + " - "
-					+ new SimpleDateFormat().format(new Date());
-		}
+		description = this.getProject().getProjectName() + " - "
+				+ new SimpleDateFormat().format(new Date());
 
 		JSONObject pack = new JSONObject();
 		pack.put("pack_format", 1);

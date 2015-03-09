@@ -1,0 +1,1 @@
+package eu.matejkormuth.rpbuild.configuration;

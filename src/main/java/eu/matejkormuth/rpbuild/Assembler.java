@@ -19,7 +19,6 @@
  */
 package eu.matejkormuth.rpbuild;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.Charset;
 import java.nio.file.Files;
@@ -36,6 +35,7 @@ import org.slf4j.LoggerFactory;
 
 import eu.matejkormuth.rpbuild.BuildStep.CompileBuildStep;
 import eu.matejkormuth.rpbuild.BuildStep.GenerateBuildStep;
+import eu.matejkormuth.rpbuild.api.Project;
 import eu.matejkormuth.rpbuild.compilers.JsonCompressor;
 import eu.matejkormuth.rpbuild.generators.PackMcMetaGenerator;
 import eu.matejkormuth.rpbuild.generators.StarvingSoundsJsonGenerator;
@@ -52,28 +52,28 @@ public class Assembler {
 	private FileFinder fileFinder;
 	private SimpleDateFormat dateTimeFormat;
 	private SimpleDateFormat timeSpanFormat;
-	private Options options;
+	private Project project;
 
-	public Assembler(Options options) {
+	public Assembler(Project project) {
 		this.generators = new ArrayList<Generator>();
 		this.compilerLists = new ArrayList<FileExtensionCompilerList>();
 		this.dateTimeFormat = new SimpleDateFormat();
 		this.timeSpanFormat = new SimpleDateFormat("mm:ss.SSS");
 
-		this.options = options;
+		this.project = project;
 
 		this.addBuildStep(BuildStep.generate(new PackMcMetaGenerator()));
 		this.addBuildStep(BuildStep.generate(new StarvingSoundsJsonGenerator()));
 		this.addBuildStep(BuildStep.compile(new JsonCompressor(), ".json"));
 
 		this.fileFinder = new FileFinder();
-		this.fileFinder.setIgnoreGit(this.options.ignoreGit);
+		this.fileFinder.setIgnoreGit(this.project.isIgnoreGitFolders());
 	}
 
 	private void findFiles() {
 		log.info("Looking for files...");
 		try {
-			int count = this.fileFinder.find(this.options.root);
+			int count = this.fileFinder.find(this.project.getSrc());
 			log.info("Found {} files!", count);
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -82,16 +82,16 @@ public class Assembler {
 
 	public void build() {
 		printBuildStart();
-		
+
 		long startTime = System.currentTimeMillis();
-		
-		if(this.options.gitPull) {
+
+		if (this.project.isGitPull()) {
 			log.info("Git pull is enabled in this build! Pulling using shell command (git pull).");
 			try {
 				Process gitProcess = Runtime.getRuntime().exec("git pull");
-			    int exitCode = gitProcess.waitFor();
-			    log.info("Git process exited with exit code {}.",  exitCode);
-			    
+				int exitCode = gitProcess.waitFor();
+				log.info("Git process exited with exit code {}.", exitCode);
+
 			} catch (IOException | InterruptedException e) {
 				log.error("Can't complete git pull! Giving up!", e);
 				printBuildEnd(System.currentTimeMillis() - startTime, "FAILURE");
@@ -127,7 +127,7 @@ public class Assembler {
 
 	private void printBuildEnd(long elapsedTime, String status) {
 		printSeparator();
-		log.info("Build of project {} finished!", options.projectName);
+		log.info("Build of project {} finished!", project.getProjectName());
 		printSeparator();
 		log.info("Status: {}", status);
 		log.info("Memory: {} MB / {} MB",
@@ -141,9 +141,9 @@ public class Assembler {
 
 	private void printBuildStart() {
 		printSeparator();
-		log.info("Build of project " + options.projectName + " started at "
-				+ this.dateTimeFormat.format(new Date()));
-		log.info("Used charset/encoding: " + this.options.encoding);
+		log.info("Build of project " + project.getProjectName()
+				+ " started at " + this.dateTimeFormat.format(new Date()));
+		log.info("Used charset/encoding: " + this.project.getEncoding());
 		printSeparator();
 	}
 
@@ -202,13 +202,12 @@ public class Assembler {
 	private void archive() {
 		printSeparator();
 		log.info("Archiving assebled files to zip file...");
-		log.info("File name: {}", this.options.zipName);
+		log.info("File name: {}", this.project.getTarget().toString());
 
 		try {
 			int count = 0;
-			ZipArchive zipper = new ZipArchive(
-					this.options.root.toAbsolutePath(), new File(
-							this.options.zipName));
+			ZipArchive zipper = new ZipArchive(this.project.getSrc()
+					.toAbsolutePath(), this.project.getTarget().toFile());
 			for (Path path : this.fileFinder.getPaths()) {
 				if (!isFiltered(path)) {
 					zipper.addFile(path);
@@ -223,7 +222,7 @@ public class Assembler {
 	}
 
 	private boolean isFiltered(Path path) {
-		for (String endFilter : this.options.fileFilters) {
+		for (String endFilter : this.project.getFilters()) {
 			if (path.toString().endsWith(endFilter)) {
 				return true;
 			}
@@ -233,9 +232,10 @@ public class Assembler {
 
 	private void saveFile(GeneratedFile file) {
 		try {
-			Files.write(this.options.root.resolve(Paths.get(file.getName())
-					.toAbsolutePath()), file.getContents(),
-					StandardOpenOption.CREATE,
+			Files.write(
+					this.project.getSrc().resolve(
+							Paths.get(file.getName()).toAbsolutePath()),
+					file.getContents(), StandardOpenOption.CREATE,
 					StandardOpenOption.TRUNCATE_EXISTING,
 					StandardOpenOption.WRITE);
 		} catch (IOException e) {
@@ -289,19 +289,15 @@ public class Assembler {
 		return null;
 	}
 
-	public Options getOptions() {
-		return this.options;
+	public Project getProject() {
+		return this.project;
 	}
 
 	public Charset getCharset() {
-		return Charset.forName(this.options.encoding);
+		return this.project.getCharset();
 	}
 
 	public Path getSourcePath() {
-		return this.options.root;
-	}
-
-	public Path getTargetPath() {
-		return this.options.target;
+		return this.project.getSrc();
 	}
 }
