@@ -3,6 +3,8 @@ Build system for Minecraft resource packs.
 
 This tool simplifies process of assembling/compressing and distribution of Minecraft resource pack by automatization of some tasks.
 
+**Latest build:** <http://ci.alpha.mtkn.eu/job/rpbuild/lastBuild/>
+
 
 ![](http://i.imgur.com/vSLchIu.png?1)
 
