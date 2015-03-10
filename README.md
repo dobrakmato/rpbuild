@@ -6,7 +6,63 @@ This tool simplifies process of assembling/compressing and distribution of Minec
 
 ![](http://i.imgur.com/vSLchIu.png?1)
 
-### Build descriptor (Build configuration)
+## Build configuration
+
+To build your resource pack, just run the jar in folder, configuration file exists:
+
+`./rpbuild.jar`
+
+`java -jar rpbuild.jar`
+
+You can also specify configuration file explicitly.
+
+`./rpbuild.jar [CONFIGURATION FILE]`
+
+`java -jar rpbuild.jar [CONFIGURATION FILE]` 
+
+### Xml configuration
+
+The best way to make configuration file for your build is to use XML configuration. Create file with name `rpbuild.xml` in folder with resource pack or use `rpbuild.jar create` command to generate one for you. The file is self-explaining. Look at the example here:
+
+```xml
+<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<project>
+    <!-- Name of resource pack. -->
+    <name>ResourcePack Name</name>
+    <!-- Encoding / charset used in build. -->
+    <encoding>UTF-8</encoding>
+    <!-- Whether to run git pull before building resource pack. -->
+    <gitPull>false</gitPull>
+    <!-- Whether to exclude .git folders in target zip archive. -->
+    <ignoreGitFolders>true</ignoreGitFolders>
+    <!-- Source of resource pack. -->
+    <src>.</src>
+    <!-- Target zip file. -->
+    <target>/mertex/web/zombie/2/rp/latest.zip</target>
+    <!-- Build steps. -->
+    <build>
+        <!-- Specifies to run Generator (PackMcMetaGenerator - this one creates pack.mcmeta file) in build. -->
+        <generate class="eu.matejkormuth.rpbuild.generators.PackMcMetaGenerator"/>
+        <!-- Specifies to run Compiler (JsonCompressor - this one compresess jsons) in build. Files attribute specifies type of files, which this compiler compiles. -->
+        <compile class="eu.matejkormuth.rpbuild.compilers.JsonCompressor" files=".json"/>
+    </build>
+    <!-- Filters - ending of files which will be excluded in target zip file. -->
+    <filters>
+        <!-- Matches rpbuild.xml -->
+        <filter>rpbuild.xml</filter>
+        <!-- Matches everyting that ends with .jar -->
+        <filter>.jar</filter>
+        <filter>.zip</filter>
+        <filter>.bat</filter>
+        <filter>.php</filter>
+        <filter>.sh</filter>
+        <filter>.md</filter>
+        <filter>.log</filter>
+    </filters>
+</project>
+```
+
+### Legacy configuration (deprecated)
 
 Build descriptors are just java properties files. Take a look at example file:
 
