@@ -1,4 +1,4 @@
-# rpbuild
+# rpbuild ![](https://travis-ci.org/dobrakmato/rpbuild.svg)
 Build system for Minecraft resource packs.
 
 This tool simplifies process of assembling/compressing and distribution of Minecraft resource pack by automatization of some tasks.
