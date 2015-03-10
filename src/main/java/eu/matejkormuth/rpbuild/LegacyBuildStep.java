@@ -23,7 +23,7 @@ import eu.matejkormuth.rpbuild.api.BuildStep;
 import eu.matejkormuth.rpbuild.api.BuildStepCompile;
 import eu.matejkormuth.rpbuild.api.BuildStepGenerate;
 
-public abstract class LegacyBuildStep implements BuildStep {
+public abstract class LegacyBuildStep extends BuildStep {
 	/**
 	 * Creates new <b>compile</b> build step with specified Compiler and file
 	 * type that this compiler compiles.
@@ -34,7 +34,7 @@ public abstract class LegacyBuildStep implements BuildStep {
 	 *            file type (extension) associated with this compiler
 	 * @return
 	 */
-	public static LegacyBuildStep compile(Compiler compiler, String fileType) {
+	public static LegacyCompileBuildStep compile(Compiler compiler, String fileType) {
 		return new LegacyCompileBuildStep(compiler, fileType);
 	}
 
@@ -48,7 +48,7 @@ public abstract class LegacyBuildStep implements BuildStep {
 	 *            file types (extensions) associated with this compiler
 	 * @return build step
 	 */
-	public static LegacyBuildStep compile(Compiler compiler,
+	public static LegacyCompileBuildStep compile(Compiler compiler,
 			String... fileTypes) {
 		return new LegacyCompileBuildStep(compiler, fileTypes);
 	}
@@ -60,7 +60,7 @@ public abstract class LegacyBuildStep implements BuildStep {
 	 *            the generator
 	 * @return build step
 	 */
-	public static LegacyBuildStep generate(Generator generator) {
+	public static LegacyGenerateBuildStep generate(Generator generator) {
 		return new LegacyGenerateBuildStep(generator);
 	}
 
@@ -68,8 +68,7 @@ public abstract class LegacyBuildStep implements BuildStep {
 	 * {@link LegacyBuildStep} that represents <b>compile</b> build phase in
 	 * which the specified file types are compiled using {@link Compiler}.
 	 */
-	public static class LegacyCompileBuildStep extends LegacyBuildStep
-			implements BuildStepCompile {
+	public static class LegacyCompileBuildStep extends BuildStepCompile {
 		private Compiler compiler;
 		private String[] fileTypes;
 
@@ -96,8 +95,7 @@ public abstract class LegacyBuildStep implements BuildStep {
 	 * {@link LegacyBuildStep} that represents <b>generate</b> build phase in
 	 * which the files are generated using {@link Generator}s.
 	 */
-	public static class LegacyGenerateBuildStep extends LegacyBuildStep
-			implements BuildStepGenerate {
+	public static class LegacyGenerateBuildStep extends BuildStepGenerate {
 		private Generator generator;
 
 		public LegacyGenerateBuildStep(Generator generator) {

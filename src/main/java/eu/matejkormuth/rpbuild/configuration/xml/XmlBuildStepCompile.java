@@ -3,13 +3,18 @@ package eu.matejkormuth.rpbuild.configuration.xml;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
-
+import eu.matejkormuth.rpbuild.BuildError;
 import eu.matejkormuth.rpbuild.Compiler;
 import eu.matejkormuth.rpbuild.api.BuildStepCompile;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-public class XmlBuildStepCompile extends XmlBuildStep implements
-		BuildStepCompile {
+public class XmlBuildStepCompile extends BuildStepCompile {
+
+	@XmlAttribute(name = "class")
+	protected String clazz;
+
+	protected transient Class<?> clazzObj;
+
 	@XmlAttribute(name = "files")
 	private String fileType;
 
@@ -45,5 +50,21 @@ public class XmlBuildStepCompile extends XmlBuildStep implements
 	@Override
 	public String[] getFileTypes() {
 		return new String[] { this.getFileType() };
+	}
+
+	public String getComponentClassName() {
+		return clazz;
+	}
+
+	public Class<?> getComponentClass() {
+		if (clazzObj == null) {
+			try {
+				return (clazzObj = Class.forName(this.clazz));
+			} catch (ClassNotFoundException e) {
+				throw new BuildError(e);
+			}
+		} else {
+			return clazzObj;
+		}
 	}
 }

@@ -25,9 +25,12 @@ import java.io.IOException;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
 
 import eu.matejkormuth.rpbuild.api.Project;
 import eu.matejkormuth.rpbuild.configuration.legacy.LegacyOptionsParser;
+import eu.matejkormuth.rpbuild.configuration.xml.XmlBuildStepCompile;
+import eu.matejkormuth.rpbuild.configuration.xml.XmlBuildStepGenerate;
 import eu.matejkormuth.rpbuild.configuration.xml.XmlProject;
 
 /**
@@ -40,11 +43,12 @@ public class Bootstrap {
 		if (args.length == 1) {
 			if (args[0].equalsIgnoreCase("create")) {
 				try {
-					JAXBContext
-							.newInstance(XmlProject.class)
-							.createMarshaller()
-							.marshal(new XmlProject(),
-									new FileWriter(new File("rpbuild.xml")));
+					Marshaller m = JAXBContext.newInstance(XmlProject.class,
+							XmlBuildStepCompile.class,
+							XmlBuildStepGenerate.class).createMarshaller();
+					m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
+					m.marshal(new XmlProject(), new FileWriter(new File(
+							"rpbuild.xml")));
 				} catch (JAXBException | IOException e) {
 					e.printStackTrace();
 				}
@@ -103,7 +107,8 @@ public class Bootstrap {
 	private static void runAssembler(String file) {
 		if (file.endsWith(".xml")) {
 			try {
-				JAXBContext context = JAXBContext.newInstance(XmlProject.class);
+				JAXBContext context = JAXBContext.newInstance(XmlProject.class,
+						XmlBuildStepCompile.class, XmlBuildStepGenerate.class);
 				Object projectObj = context.createUnmarshaller().unmarshal(
 						new File(file));
 				Project options = (Project) projectObj;

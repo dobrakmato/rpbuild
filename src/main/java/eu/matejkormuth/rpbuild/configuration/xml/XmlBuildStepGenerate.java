@@ -2,14 +2,20 @@ package eu.matejkormuth.rpbuild.configuration.xml;
 
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
+import javax.xml.bind.annotation.XmlAttribute;
 
+import eu.matejkormuth.rpbuild.BuildError;
 import eu.matejkormuth.rpbuild.Generator;
 import eu.matejkormuth.rpbuild.api.BuildStepGenerate;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-public class XmlBuildStepGenerate extends XmlBuildStep implements
-		BuildStepGenerate {
+public class XmlBuildStepGenerate extends BuildStepGenerate {
 	// Configuration
+
+	@XmlAttribute(name = "class")
+	protected String clazz;
+
+	protected transient Class<?> clazzObj;
 
 	public XmlBuildStepGenerate() {
 	}
@@ -31,6 +37,22 @@ public class XmlBuildStepGenerate extends XmlBuildStep implements
 		} else {
 			throw new RuntimeException("Class '" + this.getComponentClassName()
 					+ "' is not a Generator class!");
+		}
+	}
+
+	public String getComponentClassName() {
+		return clazz;
+	}
+
+	public Class<?> getComponentClass() {
+		if (clazzObj == null) {
+			try {
+				return (clazzObj = Class.forName(this.clazz));
+			} catch (ClassNotFoundException e) {
+				throw new BuildError(e);
+			}
+		} else {
+			return clazzObj;
 		}
 	}
 }

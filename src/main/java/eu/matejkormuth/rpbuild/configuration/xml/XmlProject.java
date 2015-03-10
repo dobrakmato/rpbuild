@@ -9,6 +9,8 @@ import java.util.List;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+import javax.xml.bind.annotation.XmlElements;
 import javax.xml.bind.annotation.XmlRootElement;
 
 import eu.matejkormuth.rpbuild.api.BuildStep;
@@ -23,7 +25,6 @@ public class XmlProject implements Project {
 	private String name = "ResourcePack";
 	@XmlElement
 	private String encoding = "UTF-8";
-	@XmlElement
 	private transient Charset charset = Charset.forName(this.encoding);
 	@XmlElement
 	private boolean gitPull = false;
@@ -33,19 +34,23 @@ public class XmlProject implements Project {
 	private Path src = Paths.get(".");
 	@XmlElement
 	private Path target = Paths.get("latest.zip");
-	@XmlElement
-	private BuildStep[] build = new XmlBuildStep[] {
+	@XmlElements({
+			@XmlElement(name = "generate", type = XmlBuildStepGenerate.class),
+			@XmlElement(name = "compile", type = XmlBuildStepCompile.class) })
+	@XmlElementWrapper(name = "build")
+	private BuildStep[] build = new BuildStep[] {
 			new XmlBuildStepGenerate(PackMcMetaGenerator.class),
 			new XmlBuildStepCompile(JsonCompressor.class, ".json") };
 	@XmlElement
-	private String[] filter = new String[] {};
+	@XmlElementWrapper(name = "filters")
+	private String[] filter = new String[] { "rpbuild.xml", ".jar", ".zip" };
 
 	public XmlProject() {
 	}
 
 	public XmlProject(String name, String encoding, Charset charset,
 			boolean gitPull, boolean ignoreGitFolders, Path src, Path target,
-			XmlBuildStep[] build) {
+			BuildStep[] build) {
 		this.name = name;
 		this.encoding = encoding;
 		this.charset = charset;
