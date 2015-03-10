@@ -20,8 +20,11 @@
 package eu.matejkormuth.rpbuild;
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.IOException;
 
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
 
 import eu.matejkormuth.rpbuild.api.Project;
 import eu.matejkormuth.rpbuild.configuration.legacy.LegacyOptionsParser;
@@ -35,7 +38,19 @@ public class Bootstrap {
 	public static void main(String[] args) {
 		// In case out client know how to use application.
 		if (args.length == 1) {
-			runAssembler(args[0]);
+			if (args[0].equalsIgnoreCase("create")) {
+				try {
+					JAXBContext
+							.newInstance(XmlProject.class)
+							.createMarshaller()
+							.marshal(new XmlProject(),
+									new FileWriter(new File("rpbuild.xml")));
+				} catch (JAXBException | IOException e) {
+					e.printStackTrace();
+				}
+			} else {
+				runAssembler(args[0]);
+			}
 		} else {
 			// Let's find file for him!
 			findDescriptor();
