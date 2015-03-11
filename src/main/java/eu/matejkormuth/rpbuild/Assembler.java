@@ -56,9 +56,9 @@ public class Assembler {
 		this.timeSpanFormat = new SimpleDateFormat("mm:ss.SSS");
 
 		this.project = project;
-		
+
 		// Add build steps.
-		for(BuildStep step : this.project.getBuild()) {
+		for (BuildStep step : this.project.getBuild()) {
 			this.addBuildStep(step);
 		}
 
@@ -82,8 +82,13 @@ public class Assembler {
 		long startTime = System.currentTimeMillis();
 
 		if (this.project.isGitPull()) {
-			log.info("Git pull is enabled in this build! Pulling using shell command (git pull).");
+			log.info("Git pull is enabled in this build! Pulling using shell commands (git stash drop & git pull).");
 			try {
+				log.info("Executing: git stash save --keep-index.");
+				Runtime.getRuntime().exec("git stash save --keep-index").waitFor();
+				log.info("Executing: git stash drop.");
+				Runtime.getRuntime().exec("git stash drop").waitFor();
+				log.info("Executing: git pull.");
 				Process gitProcess = Runtime.getRuntime().exec("git pull");
 				int exitCode = gitProcess.waitFor();
 				log.info("Git process exited with exit code {}.", exitCode);
@@ -147,7 +152,7 @@ public class Assembler {
 		log.info("------------------------------------------------------");
 	}
 
-	private void generateFiles() {
+	private void generateFiles() throws BuildError {
 		printSeparator();
 		int count = 0;
 		for (Generator g : this.generators) {
@@ -168,7 +173,7 @@ public class Assembler {
 		log.info("Totally generated {} files!", count);
 	}
 
-	private void buildFiles() {
+	private void buildFiles() throws BuildError {
 		printSeparator();
 		log.info("Compiling files...");
 		int count = 0;
@@ -181,7 +186,11 @@ public class Assembler {
 				count++;
 				currentFile = new OpenedFile(path);
 				for (Compiler c : list) {
-					c.compile(currentFile);
+					try {
+						c.compile(currentFile);
+					} catch (Exception e) {
+						throw new BuildError(e);
+					}
 				}
 				currentFile.save();
 			}

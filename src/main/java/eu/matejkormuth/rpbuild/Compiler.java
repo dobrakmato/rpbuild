@@ -29,5 +29,5 @@ public abstract class Compiler extends Component {
 	 * @param file
 	 *            file to compile
 	 */
-	public abstract void compile(OpenedFile file);
+	public abstract void compile(OpenedFile file) throws Exception;
 }

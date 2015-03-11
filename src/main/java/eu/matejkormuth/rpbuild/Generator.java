@@ -28,5 +28,5 @@ public abstract class Generator extends Component {
 	 * 
 	 * @return result of generation process as {@link OpenedFile}.
 	 */
-	public abstract OpenedFile generate();
+	public abstract OpenedFile generate() throws Exception;
 }
