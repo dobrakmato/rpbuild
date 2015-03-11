@@ -19,24 +19,32 @@
  */
 package eu.matejkormuth.rpbuild;
 
+import java.nio.file.Files;
+import java.nio.file.Path;
+
 /**
  * Represents files created by {@link Generator}.
  */
-public class GeneratedFile {
-	private String name;
+public class OpenedFile {
+	private Path path;
 	private byte[] contents;
 
-	public GeneratedFile(String name, byte[] contents) {
-		this.name = name;
+	public OpenedFile(Path path) {
+		this.path = path;
+		try {
+			this.contents = Files.readAllBytes(path);
+		} catch (Exception e) {
+			throw new BuildError(e);
+		}
+	}
+
+	public OpenedFile(Path path, byte[] contents) {
+		this.path = path;
 		this.contents = contents;
 	}
 
-	public String getName() {
-		return name;
-	}
-
-	public void setName(String name) {
-		this.name = name;
+	public Path getPath() {
+		return path;
 	}
 
 	public byte[] getContents() {
@@ -47,4 +55,11 @@ public class GeneratedFile {
 		this.contents = contents;
 	}
 
+	public void save() {
+		try {
+			Files.write(this.path, this.contents);
+		} catch (Exception e) {
+			throw new BuildError(e);
+		}
+	}
 }

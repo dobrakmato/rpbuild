@@ -24,7 +24,7 @@ import java.util.Date;
 
 import org.json.JSONObject;
 
-import eu.matejkormuth.rpbuild.GeneratedFile;
+import eu.matejkormuth.rpbuild.OpenedFile;
 import eu.matejkormuth.rpbuild.Generator;
 
 /**
@@ -35,7 +35,7 @@ public class PackMcMetaGenerator extends Generator {
 	private JSONObject json = new JSONObject();
 
 	@Override
-	public GeneratedFile generate() {
+	public OpenedFile generate() {
 		String description = null;
 		description = this.getProject().getProjectName() + " - "
 				+ new SimpleDateFormat().format(new Date());
@@ -45,7 +45,7 @@ public class PackMcMetaGenerator extends Generator {
 		pack.put("description", description);
 		json.put("pack", pack);
 
-		return new GeneratedFile("pack.mcmeta", json.toString(2).getBytes(
-				this.getCharset()));
+		return new OpenedFile(this.getPath("pack.mcmeta"), json.toString(2)
+				.getBytes(this.getCharset()));
 	}
 }

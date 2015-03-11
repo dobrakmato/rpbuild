@@ -26,7 +26,7 @@ public abstract class Generator extends Component {
 	/**
 	 * Starts generation process of this file generator instance.
 	 * 
-	 * @return result of generation process as {@link GeneratedFile}.
+	 * @return result of generation process as {@link OpenedFile}.
 	 */
-	public abstract GeneratedFile generate();
+	public abstract OpenedFile generate();
 }

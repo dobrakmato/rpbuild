@@ -21,10 +21,7 @@ package eu.matejkormuth.rpbuild;
 
 import java.io.IOException;
 import java.nio.charset.Charset;
-import java.nio.file.Files;
 import java.nio.file.Path;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -46,7 +43,7 @@ public class Assembler {
 	private static final Logger log = LoggerFactory.getLogger(Assembler.class);
 
 	private List<Generator> generators;
-	private List<FileExtensionCompilerList> compilerLists;
+	private List<CompilerListByFileExtension> compilerLists;
 	private FileFinder fileFinder;
 	private SimpleDateFormat dateTimeFormat;
 	private SimpleDateFormat timeSpanFormat;
@@ -54,11 +51,16 @@ public class Assembler {
 
 	public Assembler(Project project) {
 		this.generators = new ArrayList<Generator>();
-		this.compilerLists = new ArrayList<FileExtensionCompilerList>();
+		this.compilerLists = new ArrayList<CompilerListByFileExtension>();
 		this.dateTimeFormat = new SimpleDateFormat();
 		this.timeSpanFormat = new SimpleDateFormat("mm:ss.SSS");
 
 		this.project = project;
+		
+		// Add build steps.
+		for(BuildStep step : this.project.getBuild()) {
+			this.addBuildStep(step);
+		}
 
 		this.fileFinder = new FileFinder();
 		this.fileFinder.setIgnoreGit(this.project.isIgnoreGitFolders());
@@ -151,13 +153,13 @@ public class Assembler {
 		for (Generator g : this.generators) {
 			log.info("Running generator: {}", g.getClass().getSimpleName());
 			try {
-				GeneratedFile file = g.generate();
+				OpenedFile file = g.generate();
 				if (file == null) {
 					log.warn("Generator {} generated null file!", g.getClass()
 							.getSimpleName());
 					continue;
 				}
-				this.saveFile(file);
+				file.save();
 				count++;
 			} catch (Exception e) {
 				throw new BuildError(e);
@@ -170,19 +172,18 @@ public class Assembler {
 		printSeparator();
 		log.info("Compiling files...");
 		int count = 0;
-		for (FileExtensionCompilerList list : this.compilerLists) {
-			List<Path> paths = this.fileFinder
-					.getPaths(list.getFileExtension());
+		for (CompilerListByFileExtension list : this.compilerLists) {
+			List<Path> matchingFiles = this.fileFinder.getPaths(list
+					.getFileExtension());
 
-			for (Compiler c : list) {
-				int ccount = 0;
-				for (Path path : paths) {
-					c.compile(path);
-					count++;
-					ccount++;
+			OpenedFile currentFile;
+			for (Path path : matchingFiles) {
+				count++;
+				currentFile = new OpenedFile(path);
+				for (Compiler c : list) {
+					c.compile(currentFile);
 				}
-				log.info("Compiled {} files with {}.", ccount, c.getClass()
-						.getSimpleName());
+				currentFile.save();
 			}
 		}
 		log.info("Totally compiled {} files!", count);
@@ -224,19 +225,6 @@ public class Assembler {
 		return false;
 	}
 
-	private void saveFile(GeneratedFile file) {
-		try {
-			Files.write(
-					this.project.getSrc().resolve(
-							Paths.get(file.getName()).toAbsolutePath()),
-					file.getContents(), StandardOpenOption.CREATE,
-					StandardOpenOption.TRUNCATE_EXISTING,
-					StandardOpenOption.WRITE);
-		} catch (IOException e) {
-			throw new BuildError(e);
-		}
-	}
-
 	public void addBuildStep(BuildStep buildStep) {
 		try {
 			if (buildStep instanceof BuildStepCompile) {
@@ -263,9 +251,9 @@ public class Assembler {
 	}
 
 	private void addCompileStep(Compiler compiler, String fileExtension) {
-		FileExtensionCompilerList compilerList = findBuilder(fileExtension);
+		CompilerListByFileExtension compilerList = findBuilder(fileExtension);
 		if (compilerList == null) {
-			FileExtensionCompilerList newList = new FileExtensionCompilerList(
+			CompilerListByFileExtension newList = new CompilerListByFileExtension(
 					fileExtension);
 			compiler.setAssembler(this);
 			newList.add(compiler);
@@ -280,8 +268,8 @@ public class Assembler {
 		this.generators.add(generator);
 	}
 
-	private FileExtensionCompilerList findBuilder(String fileExtension) {
-		for (FileExtensionCompilerList b : this.compilerLists) {
+	private CompilerListByFileExtension findBuilder(String fileExtension) {
+		for (CompilerListByFileExtension b : this.compilerLists) {
 			if (b.getFileExtension().equalsIgnoreCase(fileExtension)) {
 				return b;
 			}

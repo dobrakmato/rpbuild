@@ -27,7 +27,7 @@ import java.util.List;
 
 import org.json.JSONObject;
 
-import eu.matejkormuth.rpbuild.GeneratedFile;
+import eu.matejkormuth.rpbuild.OpenedFile;
 import eu.matejkormuth.rpbuild.Generator;
 
 /**
@@ -36,7 +36,7 @@ import eu.matejkormuth.rpbuild.Generator;
 public class StarvingSoundsJsonGenerator extends Generator {
 	private JSONObject root;
 
-	public GeneratedFile generate() {
+	public OpenedFile generate() {
 		this.create();
 
 		this.addFirearms();
@@ -45,9 +45,9 @@ public class StarvingSoundsJsonGenerator extends Generator {
 		return this.build();
 	}
 
-	private GeneratedFile build() {
-		return new GeneratedFile("assets/minecraft/sounds.json", this.root
-				.toString(2).getBytes(this.getCharset()));
+	private OpenedFile build() {
+		return new OpenedFile(this.getPath("assets/minecraft/sounds.json"),
+				this.root.toString(2).getBytes(this.getCharset()));
 	}
 
 	private void addOtherSounds() {

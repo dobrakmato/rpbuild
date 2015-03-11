@@ -19,33 +19,18 @@
  */
 package eu.matejkormuth.rpbuild.compilers;
 
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.StandardOpenOption;
-
 import eu.matejkormuth.rpbuild.Compiler;
+import eu.matejkormuth.rpbuild.OpenedFile;
 
 /**
- * Represents compiler that compresses json files by removing all whitespace
+ * Represents compiler that compresses JSON files by removing all whitespace
  * from them.
  */
 public class JsonCompressor extends Compiler {
 	@Override
-	public void compile(Path file) {
-		try {
-			// Load old data.
-			byte[] data = Files.readAllBytes(file);
-			// Replace all whitespace.
-			String optimized = new String(data, this.getCharset()).replaceAll(
-					"\\s+", "");
-			// Save optimized.
-			Files.write(file, optimized.getBytes(this.getCharset()),
-					StandardOpenOption.CREATE,
-					StandardOpenOption.TRUNCATE_EXISTING,
-					StandardOpenOption.WRITE);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+	public void compile(OpenedFile file) {
+		// Replace all whitespace.
+		file.setContents(new String(file.getContents(), this.getCharset())
+				.replaceAll("\\s+", "").getBytes(this.getCharset()));
 	}
 }

@@ -19,8 +19,6 @@
  */
 package eu.matejkormuth.rpbuild;
 
-import java.nio.file.Path;
-
 /**
  * Represents object that build some type of file(s).
  */
@@ -31,5 +29,5 @@ public abstract class Compiler extends Component {
 	 * @param file
 	 *            file to compile
 	 */
-	public abstract void compile(Path file);
+	public abstract void compile(OpenedFile file);
 }

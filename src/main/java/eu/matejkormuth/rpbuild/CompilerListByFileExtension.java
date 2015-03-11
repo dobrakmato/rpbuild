@@ -28,11 +28,11 @@ import java.util.ListIterator;
 /**
  * Represents list of {@link Compiler}s associated to one file type.
  */
-public class FileExtensionCompilerList implements List<Compiler> {
+public class CompilerListByFileExtension implements List<Compiler> {
 	private String fileExtension;
 	private List<Compiler> compilers;
 
-	public FileExtensionCompilerList(String fileExtension) {
+	public CompilerListByFileExtension(String fileExtension) {
 		this.compilers = new ArrayList<Compiler>();
 		this.fileExtension = fileExtension;
 	}
