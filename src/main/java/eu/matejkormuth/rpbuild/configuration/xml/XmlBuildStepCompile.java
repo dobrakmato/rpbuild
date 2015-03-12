@@ -22,6 +22,9 @@ package eu.matejkormuth.rpbuild.configuration.xml;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
+
 import eu.matejkormuth.rpbuild.BuildError;
 import eu.matejkormuth.rpbuild.Compiler;
 import eu.matejkormuth.rpbuild.api.BuildStepCompile;
@@ -36,6 +39,10 @@ public class XmlBuildStepCompile extends BuildStepCompile {
 
 	@XmlAttribute(name = "files")
 	private String fileType;
+
+	@XmlElement
+	@XmlElementWrapper(name = "settings")
+	private XmlSetting[] settings;
 
 	public XmlBuildStepCompile() {
 	}
@@ -59,6 +66,7 @@ public class XmlBuildStepCompile extends BuildStepCompile {
 	public Compiler getCompiler() throws Exception {
 		Object obj = this.getComponentClass().getConstructor().newInstance();
 		if (obj instanceof Compiler) {
+			((Compiler) obj).init();
 			return (Compiler) obj;
 		} else {
 			throw new RuntimeException("Class '" + this.getComponentClassName()
@@ -85,5 +93,9 @@ public class XmlBuildStepCompile extends BuildStepCompile {
 		} else {
 			return clazzObj;
 		}
+	}
+
+	public XmlSetting[] getSettings() {
+		return settings;
 	}
 }

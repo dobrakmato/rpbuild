@@ -22,6 +22,8 @@ package eu.matejkormuth.rpbuild.configuration.xml;
 import javax.xml.bind.annotation.XmlAccessType;
 import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
+import javax.xml.bind.annotation.XmlElement;
+import javax.xml.bind.annotation.XmlElementWrapper;
 
 import eu.matejkormuth.rpbuild.BuildError;
 import eu.matejkormuth.rpbuild.Generator;
@@ -33,6 +35,10 @@ public class XmlBuildStepGenerate extends BuildStepGenerate {
 
 	@XmlAttribute(name = "class")
 	protected String clazz;
+
+	@XmlElement
+	@XmlElementWrapper(name = "settings")
+	private XmlSetting[] settings;
 
 	protected transient Class<?> clazzObj;
 
@@ -52,6 +58,7 @@ public class XmlBuildStepGenerate extends BuildStepGenerate {
 	public Generator getGenerator() throws Exception {
 		Object obj = this.getComponentClass().getConstructor().newInstance();
 		if (obj instanceof Generator) {
+			((Generator) obj).init();
 			return (Generator) obj;
 		} else {
 			throw new RuntimeException("Class '" + this.getComponentClassName()
@@ -73,5 +80,9 @@ public class XmlBuildStepGenerate extends BuildStepGenerate {
 		} else {
 			return clazzObj;
 		}
+	}
+
+	public XmlSetting[] getSettings() {
+		return settings;
 	}
 }

@@ -83,6 +83,7 @@ public abstract class LegacyBuildStep extends BuildStep {
 		}
 
 		public Compiler getCompiler() {
+			compiler.init();
 			return compiler;
 		}
 
@@ -103,6 +104,7 @@ public abstract class LegacyBuildStep extends BuildStep {
 		}
 
 		public Generator getGenerator() {
+			generator.init();
 			return generator;
 		}
 	}

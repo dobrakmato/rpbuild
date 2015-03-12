@@ -27,6 +27,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eu.matejkormuth.rpbuild.api.Project;
+import eu.matejkormuth.rpbuild.configuration.xml.XmlSetting;
 
 /**
  * Abstract class that represents build system component. Contains some useful
@@ -39,17 +40,29 @@ public abstract class Component {
 	protected static Logger log;
 
 	private Assembler assembler;
+	private XmlSetting[] settings;
 
 	public Component() {
 		log = LoggerFactory.getLogger(this.getClass());
+	}
+	
+	public void init() {
 	}
 
 	protected void setAssembler(Assembler assembler) {
 		if (this.assembler != null) {
 			throw new IllegalAccessError(
-					"Assembler has been alredy set for this component!");
+					"Assembler has been already set for this component!");
 		}
 		this.assembler = assembler;
+	}
+
+	protected void setSettings(XmlSetting[] settings) {
+		if (this.settings != null) {
+			throw new IllegalAccessError(
+					"Settings have been already set for this component!");
+		}
+		this.settings = settings;
 	}
 
 	/**
@@ -79,5 +92,40 @@ public abstract class Component {
 	 */
 	public Path getPath(String relative) {
 		return this.assembler.getSourcePath().resolve(Paths.get(relative));
+	}
+
+	/**
+	 * Returns value of setting specified by key or null if specified setting is
+	 * not present.
+	 * 
+	 * @param key
+	 *            key of setting
+	 * @return XmlSetting for specified key or null if setting not present
+	 */
+	public XmlSetting getSetting(String key) {
+		for (XmlSetting setting : this.settings) {
+			if (setting.getKey().equals(key)) {
+				return setting;
+			}
+		}
+		return null;
+	}
+
+	/**
+	 * Returns value of setting specified by key or default value if specified
+	 * setting is not present.
+	 * 
+	 * @param key
+	 *            key of setting
+	 * @return XmlSetting for specified key or default value if setting not
+	 *         present
+	 */
+	public XmlSetting getSetting(String key, String defaultValue) {
+		for (XmlSetting setting : this.settings) {
+			if (setting.getKey().equals(key)) {
+				return setting;
+			}
+		}
+		return new XmlSetting(key, defaultValue);
 	}
 }

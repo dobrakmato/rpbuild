@@ -34,6 +34,9 @@ import eu.matejkormuth.rpbuild.api.BuildStep;
 import eu.matejkormuth.rpbuild.api.BuildStepCompile;
 import eu.matejkormuth.rpbuild.api.BuildStepGenerate;
 import eu.matejkormuth.rpbuild.api.Project;
+import eu.matejkormuth.rpbuild.configuration.xml.XmlBuildStepCompile;
+import eu.matejkormuth.rpbuild.configuration.xml.XmlBuildStepGenerate;
+import eu.matejkormuth.rpbuild.configuration.xml.XmlSetting;
 
 /**
  * Represents main part of build system. Assembles files and manages build
@@ -85,7 +88,8 @@ public class Assembler {
 			log.info("Git pull is enabled in this build! Pulling using shell commands (git stash drop & git pull).");
 			try {
 				log.info("Executing: git stash save --keep-index.");
-				Runtime.getRuntime().exec("git stash save --keep-index").waitFor();
+				Runtime.getRuntime().exec("git stash save --keep-index")
+						.waitFor();
 				log.info("Executing: git stash drop.");
 				Runtime.getRuntime().exec("git stash drop").waitFor();
 				log.info("Executing: git pull.");
@@ -237,12 +241,27 @@ public class Assembler {
 	public void addBuildStep(BuildStep buildStep) {
 		try {
 			if (buildStep instanceof BuildStepCompile) {
-				this.addCompileStep(
-						((BuildStepCompile) buildStep).getCompiler(),
-						((BuildStepCompile) buildStep).getFileTypes());
+				if (buildStep instanceof XmlBuildStepCompile) {
+					this.addCompileStep(
+							((BuildStepCompile) buildStep).getCompiler(),
+							((BuildStepCompile) buildStep).getFileTypes()[0],
+							((XmlBuildStepCompile) buildStep).getSettings());
+				} else {
+					this.addCompileStep(
+							((BuildStepCompile) buildStep).getCompiler(),
+							((BuildStepCompile) buildStep).getFileTypes()[0],
+							new XmlSetting[0]);
+				}
 			} else if (buildStep instanceof BuildStepGenerate) {
-				this.addGenerateStep(((BuildStepGenerate) buildStep)
-						.getGenerator());
+				if (buildStep instanceof XmlBuildStepGenerate) {
+					this.addGenerateStep(
+							((BuildStepGenerate) buildStep).getGenerator(),
+							((XmlBuildStepGenerate) buildStep).getSettings());
+				} else {
+					this.addGenerateStep(
+							((BuildStepGenerate) buildStep).getGenerator(),
+							new XmlSetting[0]);
+				}
 			} else {
 				// Unsupported type.
 				log.warn("Tried to register unsupported build step: {}",
@@ -253,18 +272,14 @@ public class Assembler {
 		}
 	}
 
-	private void addCompileStep(Compiler compiler, String... fileExtensions) {
-		for (String fileExtension : fileExtensions) {
-			this.addCompileStep(compiler, fileExtension);
-		}
-	}
-
-	private void addCompileStep(Compiler compiler, String fileExtension) {
+	private void addCompileStep(Compiler compiler, String fileExtension,
+			XmlSetting[] settings) {
 		CompilerListByFileExtension compilerList = findBuilder(fileExtension);
 		if (compilerList == null) {
 			CompilerListByFileExtension newList = new CompilerListByFileExtension(
 					fileExtension);
 			compiler.setAssembler(this);
+			compiler.setSettings(settings);
 			newList.add(compiler);
 			this.compilerLists.add(newList);
 		} else {
@@ -272,8 +287,9 @@ public class Assembler {
 		}
 	}
 
-	private void addGenerateStep(Generator generator) {
+	private void addGenerateStep(Generator generator, XmlSetting[] settings) {
 		generator.setAssembler(this);
+		generator.setSettings(settings);
 		this.generators.add(generator);
 	}
 
