@@ -17,7 +17,7 @@
  *  
  *  "Minecraft" is a trademark of Mojang AB
  */
-package eu.matejkormuth.rpbuild.generators;
+package eu.matejkormuth.rpbuild.generators.sounds;
 
 import java.io.File;
 import java.nio.file.Path;

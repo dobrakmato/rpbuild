@@ -35,7 +35,7 @@ import javax.xml.bind.annotation.XmlRootElement;
 import eu.matejkormuth.rpbuild.api.BuildStep;
 import eu.matejkormuth.rpbuild.api.Project;
 import eu.matejkormuth.rpbuild.compilers.JsonCompressor;
-import eu.matejkormuth.rpbuild.generators.PackMcMetaGenerator;
+import eu.matejkormuth.rpbuild.generators.PackMcmetaGenerator;
 
 @XmlRootElement(name = "project")
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -58,7 +58,7 @@ public class XmlProject implements Project {
 			@XmlElement(name = "compile", type = XmlBuildStepCompile.class) })
 	@XmlElementWrapper(name = "build")
 	private BuildStep[] build = new BuildStep[] {
-			new XmlBuildStepGenerate(PackMcMetaGenerator.class),
+			new XmlBuildStepGenerate(PackMcmetaGenerator.class),
 			new XmlBuildStepCompile(JsonCompressor.class, ".json") };
 	@XmlElement
 	@XmlElementWrapper(name = "filters")

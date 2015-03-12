@@ -23,7 +23,7 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 
 /**
- * Represents files created by {@link Generator}.
+ * Represents opened file. Contains file path and file contents.
  */
 public class OpenedFile {
 	private Path path;

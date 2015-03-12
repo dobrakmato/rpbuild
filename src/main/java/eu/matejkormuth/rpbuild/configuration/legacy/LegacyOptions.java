@@ -30,7 +30,7 @@ import eu.matejkormuth.rpbuild.LegacyBuildStep;
 import eu.matejkormuth.rpbuild.api.BuildStep;
 import eu.matejkormuth.rpbuild.api.Project;
 import eu.matejkormuth.rpbuild.compilers.JsonCompressor;
-import eu.matejkormuth.rpbuild.generators.PackMcMetaGenerator;
+import eu.matejkormuth.rpbuild.generators.PackMcmetaGenerator;
 
 /**
  * Represents options of build / build configuration.
@@ -85,7 +85,7 @@ public class LegacyOptions implements Project {
 	@Override
 	public BuildStep[] getBuild() {
 		return new BuildStep[] {
-				LegacyBuildStep.generate(new PackMcMetaGenerator()),
+				LegacyBuildStep.generate(new PackMcmetaGenerator()),
 				LegacyBuildStep.compile(new JsonCompressor(), ".json") };
 	}
 

@@ -31,7 +31,7 @@ import eu.matejkormuth.rpbuild.Generator;
  * Represents essentials generator, that creates updated
  * <code>pack.mcmeta</code> file.
  */
-public class PackMcMetaGenerator extends Generator {
+public class PackMcmetaGenerator extends Generator {
 	private JSONObject json = new JSONObject();
 
 	@Override
