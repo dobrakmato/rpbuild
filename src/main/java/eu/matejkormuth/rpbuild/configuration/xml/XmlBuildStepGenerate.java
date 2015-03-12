@@ -36,9 +36,9 @@ public class XmlBuildStepGenerate extends BuildStepGenerate {
 	@XmlAttribute(name = "class")
 	protected String clazz;
 
-	@XmlElement
+	@XmlElement(name = "setting")
 	@XmlElementWrapper(name = "settings")
-	private XmlSetting[] settings;
+	protected XmlSetting[] settings;
 
 	protected transient Class<?> clazzObj;
 
@@ -58,7 +58,6 @@ public class XmlBuildStepGenerate extends BuildStepGenerate {
 	public Generator getGenerator() throws Exception {
 		Object obj = this.getComponentClass().getConstructor().newInstance();
 		if (obj instanceof Generator) {
-			((Generator) obj).init();
 			return (Generator) obj;
 		} else {
 			throw new RuntimeException("Class '" + this.getComponentClassName()

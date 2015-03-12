@@ -5,6 +5,10 @@ This tool simplifies process of assembling/compressing and distribution of Minec
 
 **Latest build:** <http://ci.alpha.mtkn.eu/job/rpbuild/lastBuild/>
 
+- [Build configuration](#build-configuration)
+  - [Xml configuration](#xml-configuration)
+  - [Legacy (deprecated) configuration](#legacy-configuration-deprecated)
+
 
 ![](http://i.imgur.com/vSLchIu.png?1)
 
@@ -24,7 +28,7 @@ You can also specify configuration file explicitly.
 
 ### Xml configuration
 
-The best way to make configuration file for your build is to use XML configuration. Create file with name `rpbuild.xml` in folder with resource pack or use `rpbuild.jar create` command to generate one for you. The file is self-explaining. Look at the example here:
+The best way to make configuration file for your build is to use XML configuration. Create file with name `rpbuild.xml` in folder with resource pack or use `rpbuild.jar create` command to generate one for you. The file is self-explaining. Look at the example below. 
 
 ```xml
 <?xml version="1.0" encoding="UTF-8" standalone="yes"?>
@@ -44,11 +48,17 @@ The best way to make configuration file for your build is to use XML configurati
     <!-- Build steps. -->
     <build>
         <!-- Specifies to run Generator (PackMcMetaGenerator - this one creates pack.mcmeta file) in build. -->
-        <generate class="eu.matejkormuth.rpbuild.generators.PackMcMetaGenerator"/>
+        <generate class="eu.matejkormuth.rpbuild.generators.sounds.PackMcMetaGenerator"/>
+        <!-- Specifies to run Compile (JsonCommenter - this one adds comment to all jsons) in build on all .json files. -->
+        <compile class="eu.matejkormuth.rpbuild.compilers.JsonCommenter" files=".json">
+        	<settings>
+            	<setting key="comment" value="My cool comment!" />
+            </settings>
+        </compile>
         <!-- Specifies to run Compiler (JsonCompressor - this one compresess jsons) in build. Files attribute specifies type of files, which this compiler compiles. -->
         <compile class="eu.matejkormuth.rpbuild.compilers.JsonCompressor" files=".json"/>
     </build>
-    <!-- Filters - ending of files which will be excluded in target zip file. -->
+    <!-- Filters - endings of files which will be excluded in target zip file. -->
     <filters>
         <!-- Matches rpbuild.xml -->
         <filter>rpbuild.xml</filter>

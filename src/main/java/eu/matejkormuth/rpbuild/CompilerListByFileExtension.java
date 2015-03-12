@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.ListIterator;
 
 /**
- * Represents list of {@link Compiler}s associated to one file type.
+ * Represents list of {@link Compiler} associated to one file type.
  */
 public class CompilerListByFileExtension implements List<Compiler> {
 	private String fileExtension;

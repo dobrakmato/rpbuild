@@ -41,28 +41,28 @@ import eu.matejkormuth.rpbuild.generators.PackMcmetaGenerator;
 @XmlAccessorType(XmlAccessType.FIELD)
 public class XmlProject implements Project {
 	@XmlElement
-	private String name = "ResourcePack";
+	protected String name = "ResourcePack";
 	@XmlElement
-	private String encoding = "UTF-8";
-	private transient Charset charset = Charset.forName(this.encoding);
+	protected String encoding = "UTF-8";
+	protected transient Charset charset = Charset.forName(this.encoding);
 	@XmlElement
-	private boolean gitPull = false;
+	protected boolean gitPull = false;
 	@XmlElement
-	private boolean ignoreGitFolders = true;
+	protected boolean ignoreGitFolders = true;
 	@XmlElement
-	private Path src = Paths.get(".");
+	protected Path src = Paths.get(".");
 	@XmlElement
-	private Path target = Paths.get("latest.zip");
+	protected Path target = Paths.get("latest.zip");
 	@XmlElements({
 			@XmlElement(name = "generate", type = XmlBuildStepGenerate.class),
 			@XmlElement(name = "compile", type = XmlBuildStepCompile.class) })
 	@XmlElementWrapper(name = "build")
-	private BuildStep[] build = new BuildStep[] {
+	protected BuildStep[] build = new BuildStep[] {
 			new XmlBuildStepGenerate(PackMcmetaGenerator.class),
 			new XmlBuildStepCompile(JsonCompressor.class, ".json") };
 	@XmlElement
 	@XmlElementWrapper(name = "filters")
-	private String[] filter = new String[] { "rpbuild.xml", ".jar", ".zip" };
+	protected String[] filter = new String[] { "rpbuild.xml", ".jar", ".zip" };
 
 	public XmlProject() {
 	}
@@ -127,5 +127,9 @@ public class XmlProject implements Project {
 	@Override
 	public List<String> getFilters() {
 		return Arrays.asList(this.filter);
+	}
+
+	public void setBuild(BuildStep[] build) {
+		this.build = build;
 	}
 }

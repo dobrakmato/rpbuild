@@ -27,11 +27,14 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 
+import eu.matejkormuth.rpbuild.api.BuildStep;
 import eu.matejkormuth.rpbuild.api.Project;
+import eu.matejkormuth.rpbuild.compilers.JsonCommenter;
 import eu.matejkormuth.rpbuild.configuration.legacy.LegacyOptionsParser;
 import eu.matejkormuth.rpbuild.configuration.xml.XmlBuildStepCompile;
 import eu.matejkormuth.rpbuild.configuration.xml.XmlBuildStepGenerate;
 import eu.matejkormuth.rpbuild.configuration.xml.XmlProject;
+import eu.matejkormuth.rpbuild.configuration.xml.XmlSetting;
 
 /**
  * Represents class with application entry point that handles startup logic of
@@ -45,9 +48,16 @@ public class Bootstrap {
 				try {
 					Marshaller m = JAXBContext.newInstance(XmlProject.class,
 							XmlBuildStepCompile.class,
-							XmlBuildStepGenerate.class).createMarshaller();
+							XmlBuildStepGenerate.class, XmlSetting.class)
+							.createMarshaller();
 					m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-					m.marshal(new XmlProject(), new FileWriter(new File(
+					XmlProject proj = new XmlProject();
+					BuildStep[] build = new BuildStep[] { new XmlBuildStepCompile(
+							JsonCommenter.class, ".json",
+							new XmlSetting[] { new XmlSetting("comment",
+									"enter comment here!") }) };
+					proj.setBuild(build);
+					m.marshal(proj, new FileWriter(new File(
 							"rpbuild.xml")));
 				} catch (JAXBException | IOException e) {
 					e.printStackTrace();

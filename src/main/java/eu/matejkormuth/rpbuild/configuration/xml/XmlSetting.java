@@ -24,8 +24,8 @@ import javax.xml.bind.annotation.XmlAccessorType;
 import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlType;
 
-@XmlAccessorType(XmlAccessType.FIELD)
 @XmlType(name = "setting")
+@XmlAccessorType(XmlAccessType.FIELD)
 public class XmlSetting {
 	@XmlAttribute
 	private String key;

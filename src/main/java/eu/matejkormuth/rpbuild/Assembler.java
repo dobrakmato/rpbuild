@@ -243,8 +243,8 @@ public class Assembler {
 			if (buildStep instanceof BuildStepCompile) {
 				if (buildStep instanceof XmlBuildStepCompile) {
 					this.addCompileStep(
-							((BuildStepCompile) buildStep).getCompiler(),
-							((BuildStepCompile) buildStep).getFileTypes()[0],
+							((XmlBuildStepCompile) buildStep).getCompiler(),
+							((XmlBuildStepCompile) buildStep).getFileTypes()[0],
 							((XmlBuildStepCompile) buildStep).getSettings());
 				} else {
 					this.addCompileStep(
@@ -255,7 +255,7 @@ public class Assembler {
 			} else if (buildStep instanceof BuildStepGenerate) {
 				if (buildStep instanceof XmlBuildStepGenerate) {
 					this.addGenerateStep(
-							((BuildStepGenerate) buildStep).getGenerator(),
+							((XmlBuildStepGenerate) buildStep).getGenerator(),
 							((XmlBuildStepGenerate) buildStep).getSettings());
 				} else {
 					this.addGenerateStep(
@@ -280,9 +280,13 @@ public class Assembler {
 					fileExtension);
 			compiler.setAssembler(this);
 			compiler.setSettings(settings);
+			compiler.init();
 			newList.add(compiler);
 			this.compilerLists.add(newList);
 		} else {
+			compiler.setAssembler(this);
+			compiler.setSettings(settings);
+			compiler.init();
 			compilerList.add(compiler);
 		}
 	}
@@ -290,6 +294,7 @@ public class Assembler {
 	private void addGenerateStep(Generator generator, XmlSetting[] settings) {
 		generator.setAssembler(this);
 		generator.setSettings(settings);
+		generator.init();
 		this.generators.add(generator);
 	}
 

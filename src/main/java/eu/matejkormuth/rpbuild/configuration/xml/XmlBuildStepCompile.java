@@ -40,11 +40,19 @@ public class XmlBuildStepCompile extends BuildStepCompile {
 	@XmlAttribute(name = "files")
 	private String fileType;
 
-	@XmlElement
+	@XmlElement(name = "setting")
 	@XmlElementWrapper(name = "settings")
-	private XmlSetting[] settings;
+	protected XmlSetting[] settings;
 
 	public XmlBuildStepCompile() {
+	}
+
+	public XmlBuildStepCompile(Class<?> compilerClass, String fileType,
+			XmlSetting[] settings) {
+		this.clazz = compilerClass.getCanonicalName();
+		this.clazzObj = compilerClass;
+		this.fileType = fileType;
+		this.settings = settings;
 	}
 
 	public XmlBuildStepCompile(Class<?> compilerClass, String fileType) {
@@ -66,7 +74,6 @@ public class XmlBuildStepCompile extends BuildStepCompile {
 	public Compiler getCompiler() throws Exception {
 		Object obj = this.getComponentClass().getConstructor().newInstance();
 		if (obj instanceof Compiler) {
-			((Compiler) obj).init();
 			return (Compiler) obj;
 		} else {
 			throw new RuntimeException("Class '" + this.getComponentClassName()

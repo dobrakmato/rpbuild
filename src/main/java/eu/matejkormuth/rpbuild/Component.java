@@ -45,7 +45,7 @@ public abstract class Component {
 	public Component() {
 		log = LoggerFactory.getLogger(this.getClass());
 	}
-	
+
 	public void init() {
 	}
 

@@ -34,7 +34,8 @@ public abstract class LegacyBuildStep extends BuildStep {
 	 *            file type (extension) associated with this compiler
 	 * @return
 	 */
-	public static LegacyCompileBuildStep compile(Compiler compiler, String fileType) {
+	public static LegacyCompileBuildStep compile(Compiler compiler,
+			String fileType) {
 		return new LegacyCompileBuildStep(compiler, fileType);
 	}
 
@@ -83,7 +84,6 @@ public abstract class LegacyBuildStep extends BuildStep {
 		}
 
 		public Compiler getCompiler() {
-			compiler.init();
 			return compiler;
 		}
 
@@ -104,7 +104,6 @@ public abstract class LegacyBuildStep extends BuildStep {
 		}
 
 		public Generator getGenerator() {
-			generator.init();
 			return generator;
 		}
 	}

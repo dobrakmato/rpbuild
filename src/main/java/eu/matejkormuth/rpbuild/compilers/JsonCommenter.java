@@ -44,7 +44,7 @@ public class JsonCommenter extends Compiler {
 	private void commentUnformatted(OpenedFile file) {
 		String contents = new String(file.getContents(), this.getCharset());
 		// { "__comment" : "comment value",
-		contents = contents.replace("{", "{\"__comment\":\"" + this.comment
+		contents = contents.replaceFirst("\\{", "{\"__comment\":\"" + this.comment
 				+ "\",");
 		file.setContents(contents.getBytes(this.getCharset()));
 	}
