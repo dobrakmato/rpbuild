@@ -68,4 +68,15 @@
       </plugin>
     </plugins>
   </build>
+  <url>https://github.com/dobrakmato/rpbuild</url>
+  <scm>
+    <url>https://github.com/dobrakmato/rpbuild</url>
+    <developerConnection>Matej Kormuth</developerConnection>
+    <connection>github</connection>
+  </scm>
+  <description>rpBuild - Build system for Minecraft resource packs.</description>
+  <ciManagement>
+    <system>jenkins</system>
+    <url>http://ci.alpha.mtkn.eu/job/rpbuild/</url>
+  </ciManagement>
 </project>

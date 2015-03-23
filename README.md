@@ -11,6 +11,7 @@ This tool simplifies process of assembling/compressing and distribution of Minec
   - [Build steps (tasks)](#build-steps-tasks)
   - [Xml configuration](#xml-configuration)
   - [Legacy (deprecated) configuration](#legacy-configuration-deprecated)
+- [Using as Maven plugin](#maven-plugin)
 
 
 ![](http://i.imgur.com/vSLchIu.png?1)
@@ -118,3 +119,39 @@ resourcePackDescription=MyResource pack.
 encoding=UTF-8
 ```
 Not all of these values are required. If no value is specified, default one will be used.
+
+## Maven plugin
+
+You can also use *rpbuild* as part of Maven build. Best way to do this is to use *rpbuild-maven-plugin*.
+
+You can do this by adding build phase to your `pom.xml`.
+
+```xml
+<plugin>
+  <groupId>eu.matejkormuth.starving</groupId>
+  <artifactId>rpbuild-maven-plugin</artifactId>
+  <version>1.0.2</version>
+  <executions>
+    <execution>
+      <phase>generate-sources</phase>
+        <goals>
+          <goal>rpbuild</goal>
+        </goals>
+      </execution>
+  </executions>
+  <configuration>
+    <configurationFile>src/rpbuild.xml</configurationFile> <!-- This is path to your rpbuild.xml project file. -->
+  </configuration>
+</plugin>
+```
+
+Don't forget to add plugin repository becaus rpbuild-maven-plugin is currently not in central repo.
+
+```xml
+<pluginRepositories>
+  <pluginRepository>
+    <id>matejkormuth-repo</id>
+    <url>http://repo.matejkormuth.eu</url>
+  </pluginRepository>
+</pluginRepositories>
+```
