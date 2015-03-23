@@ -1,11 +1,14 @@
 # rpbuild ![](https://travis-ci.org/dobrakmato/rpbuild.svg)
 Build system for Minecraft resource packs.
 
+![not fancy rpbuild's logo](http://i.imgur.com/Oh0khp2.png)
+
 This tool simplifies process of assembling/compressing and distribution of Minecraft resource pack by automatization of some tasks (minification of jsons, generation of  sounds.json).
 
 **Latest build:** <http://ci.alpha.mtkn.eu/job/rpbuild/lastBuild/>
 
 - [Build configuration](#build-configuration)
+  - [Build steps (tasks)](#build-steps-tasks)
   - [Xml configuration](#xml-configuration)
   - [Legacy (deprecated) configuration](#legacy-configuration-deprecated)
 
@@ -25,6 +28,24 @@ You can also specify configuration file explicitly.
 `./rpbuild.jar [CONFIGURATION FILE]`
 
 `java -jar rpbuild.jar [CONFIGURATION FILE]` 
+
+
+### Build steps (tasks)
+
+There are some build tasks available, but you are free to extends classes **FileGenerator** and **FileCompiler**. 
+
+**FileGenerator** class behaves like generator of files that has to be updated each time rp is build (for example sounds.json).
+These generators are available in core:
+
+- eu.matejkormuth.rpbuild.generators.PackMcMetaGenerator *(generates pack.mcmeta)*
+- eu.matejkormuth.rpbuild.generators.sounds.FileTreeSoundsJsonGenerator *(generates sounds.json from files in sounds directory)*
+
+
+**FileCompiler** class behaves like compiler of files. It opens generated and supplied files from git and processes them (for example minifies jsons or optimizes png images).
+These compilers are available in core:
+
+- eu.matejkormuth.rpbuild.compilers.JsonCompressor *(minifies jsons)*
+- eu.matejkormuth.rpbuild.compilers.JsonCommenter *(may not work, not recommended for use)*
 
 ### Xml configuration
 
@@ -48,7 +69,7 @@ The best way to make configuration file for your build is to use XML configurati
     <!-- Build steps. -->
     <build>
         <!-- Specifies to run Generator (PackMcMetaGenerator - this one creates pack.mcmeta file) in build. -->
-        <generate class="eu.matejkormuth.rpbuild.generators.sounds.PackMcMetaGenerator"/>
+        <generate class="eu.matejkormuth.rpbuild.generators.PackMcMetaGenerator"/>
         <!-- Specifies to run Compile (JsonCommenter - this one adds comment to all jsons) in build on all .json files. -->
         <compile class="eu.matejkormuth.rpbuild.compilers.JsonCommenter" files=".json">
         	<settings>

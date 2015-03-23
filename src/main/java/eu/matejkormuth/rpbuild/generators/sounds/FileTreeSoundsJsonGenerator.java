@@ -60,12 +60,13 @@ public class FileTreeSoundsJsonGenerator extends FileGenerator implements
 			throws IOException {
 		if (attrs.isRegularFile()) {
 			// Add this file.
-			String path = file
-					.relativize(this.getProject().getSrc().toAbsolutePath())
-					.toString().replace(".ogg", "");
-			String key = file
-					.relativize(this.getProject().getSrc().toAbsolutePath())
-					.toString().replace('/', '.').replace(".ogg", "");
+			final String fsSeparator = file.getFileSystem().getSeparator();
+			String path = file.toString().replace(".ogg", "")
+					.replace(fsSeparator, "/")
+					.replace("./assets/minecraft/sounds/", "");
+			String key = file.toString().replace(fsSeparator, ".")
+					.replace("..assets.minecraft.sounds.", "")
+					.replace(".ogg", "");
 			this.addSound(key, Arrays.asList(path));
 		}
 		return FileVisitResult.CONTINUE;

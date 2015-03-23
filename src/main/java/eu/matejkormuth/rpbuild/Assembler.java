@@ -102,6 +102,8 @@ public class Assembler {
 				printBuildEnd(System.currentTimeMillis() - startTime, "FAILURE");
 			}
 			printSeparator();
+			// Stop executing build method.
+			return;
 		}
 
 		this.findFiles();
