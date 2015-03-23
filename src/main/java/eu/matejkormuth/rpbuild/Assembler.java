@@ -100,10 +100,10 @@ public class Assembler {
 			} catch (IOException | InterruptedException e) {
 				log.error("Can't complete git pull! Giving up!", e);
 				printBuildEnd(System.currentTimeMillis() - startTime, "FAILURE");
+				// Stop executing build method.
+				return;
 			}
 			printSeparator();
-			// Stop executing build method.
-			return;
 		}
 
 		this.findFiles();
