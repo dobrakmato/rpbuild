@@ -19,10 +19,10 @@
  */
 package eu.matejkormuth.rpbuild.compilers;
 
-import eu.matejkormuth.rpbuild.Compiler;
+import eu.matejkormuth.rpbuild.FileCompiler;
 import eu.matejkormuth.rpbuild.OpenedFile;
 
-public class JsonCommenter extends Compiler {
+public class JsonCommenter extends FileCompiler {
 
 	private String comment;
 

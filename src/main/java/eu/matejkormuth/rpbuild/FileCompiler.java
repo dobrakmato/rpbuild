@@ -20,13 +20,14 @@
 package eu.matejkormuth.rpbuild;
 
 /**
- * Specifies object that generates file(s).
+ * Represents object that build some type of file(s).
  */
-public abstract class Generator extends Component {
+public abstract class FileCompiler extends Component {
 	/**
-	 * Starts generation process of this file generator instance.
+	 * Compiles specified source file.
 	 * 
-	 * @return result of generation process as {@link OpenedFile}.
+	 * @param file
+	 *            file to compile
 	 */
-	public abstract OpenedFile generate() throws Exception;
+	public abstract void compile(OpenedFile file) throws Exception;
 }

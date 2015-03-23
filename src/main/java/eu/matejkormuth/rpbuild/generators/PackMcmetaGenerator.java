@@ -25,13 +25,13 @@ import java.util.Date;
 import org.json.JSONObject;
 
 import eu.matejkormuth.rpbuild.OpenedFile;
-import eu.matejkormuth.rpbuild.Generator;
+import eu.matejkormuth.rpbuild.FileGenerator;
 
 /**
  * Represents essentials generator, that creates updated
  * <code>pack.mcmeta</code> file.
  */
-public class PackMcmetaGenerator extends Generator {
+public class PackMcmetaGenerator extends FileGenerator {
 	private JSONObject json = new JSONObject();
 
 	@Override

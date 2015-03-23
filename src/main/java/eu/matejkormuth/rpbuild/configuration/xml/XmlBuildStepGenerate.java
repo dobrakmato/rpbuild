@@ -26,7 +26,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 
 import eu.matejkormuth.rpbuild.BuildError;
-import eu.matejkormuth.rpbuild.Generator;
+import eu.matejkormuth.rpbuild.FileGenerator;
 import eu.matejkormuth.rpbuild.api.BuildStepGenerate;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -55,10 +55,10 @@ public class XmlBuildStepGenerate extends BuildStepGenerate {
 	}
 
 	@Override
-	public Generator getGenerator() throws Exception {
+	public FileGenerator getGenerator() throws Exception {
 		Object obj = this.getComponentClass().getConstructor().newInstance();
-		if (obj instanceof Generator) {
-			return (Generator) obj;
+		if (obj instanceof FileGenerator) {
+			return (FileGenerator) obj;
 		} else {
 			throw new RuntimeException("Class '" + this.getComponentClassName()
 					+ "' is not a Generator class!");

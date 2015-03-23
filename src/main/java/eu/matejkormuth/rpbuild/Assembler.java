@@ -45,7 +45,7 @@ import eu.matejkormuth.rpbuild.configuration.xml.XmlSetting;
 public class Assembler {
 	private static final Logger log = LoggerFactory.getLogger(Assembler.class);
 
-	private List<Generator> generators;
+	private List<FileGenerator> generators;
 	private List<CompilerListByFileExtension> compilerLists;
 	private FileFinder fileFinder;
 	private SimpleDateFormat dateTimeFormat;
@@ -53,7 +53,7 @@ public class Assembler {
 	private Project project;
 
 	public Assembler(Project project) {
-		this.generators = new ArrayList<Generator>();
+		this.generators = new ArrayList<FileGenerator>();
 		this.compilerLists = new ArrayList<CompilerListByFileExtension>();
 		this.dateTimeFormat = new SimpleDateFormat();
 		this.timeSpanFormat = new SimpleDateFormat("mm:ss.SSS");
@@ -159,7 +159,7 @@ public class Assembler {
 	private void generateFiles() throws BuildError {
 		printSeparator();
 		int count = 0;
-		for (Generator g : this.generators) {
+		for (FileGenerator g : this.generators) {
 			log.info("Running generator: {}", g.getClass().getSimpleName());
 			try {
 				OpenedFile file = g.generate();
@@ -189,7 +189,7 @@ public class Assembler {
 			for (Path path : matchingFiles) {
 				count++;
 				currentFile = new OpenedFile(path);
-				for (Compiler c : list) {
+				for (FileCompiler c : list) {
 					try {
 						c.compile(currentFile);
 					} catch (Exception e) {
@@ -272,7 +272,7 @@ public class Assembler {
 		}
 	}
 
-	private void addCompileStep(Compiler compiler, String fileExtension,
+	private void addCompileStep(FileCompiler compiler, String fileExtension,
 			XmlSetting[] settings) {
 		CompilerListByFileExtension compilerList = findBuilder(fileExtension);
 		if (compilerList == null) {
@@ -291,7 +291,7 @@ public class Assembler {
 		}
 	}
 
-	private void addGenerateStep(Generator generator, XmlSetting[] settings) {
+	private void addGenerateStep(FileGenerator generator, XmlSetting[] settings) {
 		generator.setAssembler(this);
 		generator.setSettings(settings);
 		generator.init();

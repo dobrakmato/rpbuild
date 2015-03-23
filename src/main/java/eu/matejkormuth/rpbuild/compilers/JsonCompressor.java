@@ -19,14 +19,14 @@
  */
 package eu.matejkormuth.rpbuild.compilers;
 
-import eu.matejkormuth.rpbuild.Compiler;
+import eu.matejkormuth.rpbuild.FileCompiler;
 import eu.matejkormuth.rpbuild.OpenedFile;
 
 /**
  * Represents compiler that compresses JSON files by removing all whitespace
  * from them.
  */
-public class JsonCompressor extends Compiler {
+public class JsonCompressor extends FileCompiler {
 	@Override
 	public void compile(OpenedFile file) {
 		// Replace all whitespace.

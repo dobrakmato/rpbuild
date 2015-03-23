@@ -26,7 +26,7 @@ import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 
 import eu.matejkormuth.rpbuild.BuildError;
-import eu.matejkormuth.rpbuild.Compiler;
+import eu.matejkormuth.rpbuild.FileCompiler;
 import eu.matejkormuth.rpbuild.api.BuildStepCompile;
 
 @XmlAccessorType(XmlAccessType.FIELD)
@@ -71,10 +71,10 @@ public class XmlBuildStepCompile extends BuildStepCompile {
 	}
 
 	@Override
-	public Compiler getCompiler() throws Exception {
+	public FileCompiler getCompiler() throws Exception {
 		Object obj = this.getComponentClass().getConstructor().newInstance();
-		if (obj instanceof Compiler) {
-			return (Compiler) obj;
+		if (obj instanceof FileCompiler) {
+			return (FileCompiler) obj;
 		} else {
 			throw new RuntimeException("Class '" + this.getComponentClassName()
 					+ "' is not a Compiler class!");

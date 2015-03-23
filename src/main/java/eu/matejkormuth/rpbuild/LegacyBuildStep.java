@@ -34,7 +34,7 @@ public abstract class LegacyBuildStep extends BuildStep {
 	 *            file type (extension) associated with this compiler
 	 * @return
 	 */
-	public static LegacyCompileBuildStep compile(Compiler compiler,
+	public static LegacyCompileBuildStep compile(FileCompiler compiler,
 			String fileType) {
 		return new LegacyCompileBuildStep(compiler, fileType);
 	}
@@ -49,7 +49,7 @@ public abstract class LegacyBuildStep extends BuildStep {
 	 *            file types (extensions) associated with this compiler
 	 * @return build step
 	 */
-	public static LegacyCompileBuildStep compile(Compiler compiler,
+	public static LegacyCompileBuildStep compile(FileCompiler compiler,
 			String... fileTypes) {
 		return new LegacyCompileBuildStep(compiler, fileTypes);
 	}
@@ -61,29 +61,29 @@ public abstract class LegacyBuildStep extends BuildStep {
 	 *            the generator
 	 * @return build step
 	 */
-	public static LegacyGenerateBuildStep generate(Generator generator) {
+	public static LegacyGenerateBuildStep generate(FileGenerator generator) {
 		return new LegacyGenerateBuildStep(generator);
 	}
 
 	/**
 	 * {@link LegacyBuildStep} that represents <b>compile</b> build phase in
-	 * which the specified file types are compiled using {@link Compiler}.
+	 * which the specified file types are compiled using {@link FileCompiler}.
 	 */
 	public static class LegacyCompileBuildStep extends BuildStepCompile {
-		private Compiler compiler;
+		private FileCompiler compiler;
 		private String[] fileTypes;
 
-		public LegacyCompileBuildStep(Compiler compiler, String fileType) {
+		public LegacyCompileBuildStep(FileCompiler compiler, String fileType) {
 			this.compiler = compiler;
 			this.fileTypes = new String[] { fileType };
 		}
 
-		public LegacyCompileBuildStep(Compiler compiler, String... fileTypes) {
+		public LegacyCompileBuildStep(FileCompiler compiler, String... fileTypes) {
 			this.compiler = compiler;
 			this.fileTypes = fileTypes;
 		}
 
-		public Compiler getCompiler() {
+		public FileCompiler getCompiler() {
 			return compiler;
 		}
 
@@ -94,16 +94,16 @@ public abstract class LegacyBuildStep extends BuildStep {
 
 	/**
 	 * {@link LegacyBuildStep} that represents <b>generate</b> build phase in
-	 * which the files are generated using {@link Generator}s.
+	 * which the files are generated using {@link FileGenerator}s.
 	 */
 	public static class LegacyGenerateBuildStep extends BuildStepGenerate {
-		private Generator generator;
+		private FileGenerator generator;
 
-		public LegacyGenerateBuildStep(Generator generator) {
+		public LegacyGenerateBuildStep(FileGenerator generator) {
 			this.generator = generator;
 		}
 
-		public Generator getGenerator() {
+		public FileGenerator getGenerator() {
 			return generator;
 		}
 	}

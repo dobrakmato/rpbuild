@@ -28,12 +28,12 @@ import java.util.List;
 import org.json.JSONObject;
 
 import eu.matejkormuth.rpbuild.OpenedFile;
-import eu.matejkormuth.rpbuild.Generator;
+import eu.matejkormuth.rpbuild.FileGenerator;
 
 /**
  * Represents custom <code>sounds.json</code> file generator.
  */
-public class StarvingSoundsJsonGenerator extends Generator {
+public class StarvingSoundsJsonGenerator extends FileGenerator {
 	private JSONObject root;
 
 	public OpenedFile generate() {

@@ -1,7 +1,7 @@
 # rpbuild ![](https://travis-ci.org/dobrakmato/rpbuild.svg)
 Build system for Minecraft resource packs.
 
-This tool simplifies process of assembling/compressing and distribution of Minecraft resource pack by automatization of some tasks.
+This tool simplifies process of assembling/compressing and distribution of Minecraft resource pack by automatization of some tasks (minification of jsons, generation of  sounds.json).
 
 **Latest build:** <http://ci.alpha.mtkn.eu/job/rpbuild/lastBuild/>
 

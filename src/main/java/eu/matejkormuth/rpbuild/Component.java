@@ -33,8 +33,8 @@ import eu.matejkormuth.rpbuild.configuration.xml.XmlSetting;
  * Abstract class that represents build system component. Contains some useful
  * methods.
  * 
- * @see Compiler
- * @see Generator
+ * @see FileCompiler
+ * @see FileGenerator
  */
 public abstract class Component {
 	protected static Logger log;

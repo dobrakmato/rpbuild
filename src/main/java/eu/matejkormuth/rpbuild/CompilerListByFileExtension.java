@@ -26,14 +26,14 @@ import java.util.List;
 import java.util.ListIterator;
 
 /**
- * Represents list of {@link Compiler} associated to one file type.
+ * Represents list of {@link FileCompiler} associated to one file type.
  */
-public class CompilerListByFileExtension implements List<Compiler> {
+public class CompilerListByFileExtension implements List<FileCompiler> {
 	private String fileExtension;
-	private List<Compiler> compilers;
+	private List<FileCompiler> compilers;
 
 	public CompilerListByFileExtension(String fileExtension) {
-		this.compilers = new ArrayList<Compiler>();
+		this.compilers = new ArrayList<FileCompiler>();
 		this.fileExtension = fileExtension;
 	}
 
@@ -49,7 +49,7 @@ public class CompilerListByFileExtension implements List<Compiler> {
 		return compilers.contains(o);
 	}
 
-	public Iterator<Compiler> iterator() {
+	public Iterator<FileCompiler> iterator() {
 		return compilers.iterator();
 	}
 
@@ -61,7 +61,7 @@ public class CompilerListByFileExtension implements List<Compiler> {
 		return compilers.toArray(a);
 	}
 
-	public boolean add(Compiler e) {
+	public boolean add(FileCompiler e) {
 		return compilers.add(e);
 	}
 
@@ -73,11 +73,11 @@ public class CompilerListByFileExtension implements List<Compiler> {
 		return compilers.containsAll(c);
 	}
 
-	public boolean addAll(Collection<? extends Compiler> c) {
+	public boolean addAll(Collection<? extends FileCompiler> c) {
 		return compilers.addAll(c);
 	}
 
-	public boolean addAll(int index, Collection<? extends Compiler> c) {
+	public boolean addAll(int index, Collection<? extends FileCompiler> c) {
 		return compilers.addAll(index, c);
 	}
 
@@ -101,19 +101,19 @@ public class CompilerListByFileExtension implements List<Compiler> {
 		return compilers.hashCode();
 	}
 
-	public Compiler get(int index) {
+	public FileCompiler get(int index) {
 		return compilers.get(index);
 	}
 
-	public Compiler set(int index, Compiler element) {
+	public FileCompiler set(int index, FileCompiler element) {
 		return compilers.set(index, element);
 	}
 
-	public void add(int index, Compiler element) {
+	public void add(int index, FileCompiler element) {
 		compilers.add(index, element);
 	}
 
-	public Compiler remove(int index) {
+	public FileCompiler remove(int index) {
 		return compilers.remove(index);
 	}
 
@@ -125,15 +125,15 @@ public class CompilerListByFileExtension implements List<Compiler> {
 		return compilers.lastIndexOf(o);
 	}
 
-	public ListIterator<Compiler> listIterator() {
+	public ListIterator<FileCompiler> listIterator() {
 		return compilers.listIterator();
 	}
 
-	public ListIterator<Compiler> listIterator(int index) {
+	public ListIterator<FileCompiler> listIterator(int index) {
 		return compilers.listIterator(index);
 	}
 
-	public List<Compiler> subList(int fromIndex, int toIndex) {
+	public List<FileCompiler> subList(int fromIndex, int toIndex) {
 		return compilers.subList(fromIndex, toIndex);
 	}
 
