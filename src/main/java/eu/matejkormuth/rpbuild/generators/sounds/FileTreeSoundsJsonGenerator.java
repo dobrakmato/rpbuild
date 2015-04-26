@@ -58,7 +58,8 @@ public class FileTreeSoundsJsonGenerator extends FileGenerator implements
 	@Override
 	public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
 			throws IOException {
-		if (attrs.isRegularFile()) {
+		// Only ogg files.
+		if (attrs.isRegularFile() && file.endsWith(".ogg")) {
 			// Add this file.
 			final String fsSeparator = file.getFileSystem().getSeparator();
 			String path = file.toString().replace(".ogg", "")
