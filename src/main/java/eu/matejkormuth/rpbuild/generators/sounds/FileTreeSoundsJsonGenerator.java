@@ -26,22 +26,25 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.Arrays;
-import java.util.Collection;
 
 import org.json.JSONObject;
 
-import eu.matejkormuth.rpbuild.OpenedFile;
 import eu.matejkormuth.rpbuild.FileGenerator;
+import eu.matejkormuth.rpbuild.OpenedFile;
 
 public class FileTreeSoundsJsonGenerator extends FileGenerator implements
 		FileVisitor<Path> {
 
 	private JSONObject root;
 
-	private void addSound(String key, Collection<String> sounds) {
-		JSONObject sound = new JSONObject();
-		sound.put("sounds", sounds);
-		root.put(key, sound);
+	private void addSound(String groupKey, String sound) {
+		if (root.has(groupKey)) {
+			((JSONObject) root.get(groupKey)).getJSONArray("sounds").put(sound);
+		} else {
+			JSONObject sounds = new JSONObject();
+			sounds.put("sounds", Arrays.asList(sound));
+			root.put(groupKey, sounds);
+		}
 	}
 
 	@Override
@@ -59,7 +62,7 @@ public class FileTreeSoundsJsonGenerator extends FileGenerator implements
 	public FileVisitResult visitFile(Path file, BasicFileAttributes attrs)
 			throws IOException {
 		// Only ogg files.
-		if (attrs.isRegularFile() && file.endsWith(".ogg")) {
+		if (attrs.isRegularFile()) {
 			// Add this file.
 			final String fsSeparator = file.getFileSystem().getSeparator();
 			String path = file.toString().replace(".ogg", "")
@@ -68,7 +71,11 @@ public class FileTreeSoundsJsonGenerator extends FileGenerator implements
 			String key = file.toString().replace(fsSeparator, ".")
 					.replace("..assets.minecraft.sounds.", "")
 					.replace(".ogg", "");
-			this.addSound(key, Arrays.asList(path));
+			if (key.contains("_")) {
+				this.addSound(key.substring(0, key.indexOf("_")), path);
+			} else {
+				this.addSound(key, path);
+			}
 		}
 		return FileVisitResult.CONTINUE;
 	}
