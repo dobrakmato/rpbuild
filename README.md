@@ -3,7 +3,7 @@ Build system for Minecraft resource packs.
 
 ![not fancy rpbuild's logo](http://i.imgur.com/Oh0khp2.png)
 
-This tool simplifies process of assembling/compressing and distribution of Minecraft resource pack by automatization of some tasks (minification of jsons, generation of  sounds.json).
+This tool simplifies process of assembling/compressing and distribution of Minecraft resource packs by automatization of some tasks (minification of jsons, generation of  sounds.json, rezising images for different RP resoultions).
 
 **Latest build:** <http://ci.alpha.mtkn.eu/job/rpbuild/lastBuild/>
 
@@ -18,7 +18,7 @@ This tool simplifies process of assembling/compressing and distribution of Minec
 
 ## Build configuration
 
-To build your resource pack, just run the jar in folder, configuration file exists:
+To build your resource pack, just run the jar in folder where configuration file exists:
 
 `./rpbuild.jar`
 
@@ -33,19 +33,20 @@ You can also specify configuration file explicitly.
 
 ### Build steps (tasks)
 
-There are some build tasks available, but you are free to extends classes **FileGenerator** and **FileCompiler**. 
+There are some **build tasks available out of box**, but you are free to extends classes **FileGenerator** and **FileCompiler**. 
 
-**FileGenerator** class behaves like generator of files that has to be updated each time rp is build (for example sounds.json).
-These generators are available in core:
+**FileGenerator** class generates files that needs to be regenerated each time the resource pack is built (for example sounds.json generator).
+These generators are available out of box:
 
 - eu.matejkormuth.rpbuild.generators.PackMcMetaGenerator *(generates pack.mcmeta)*
 - eu.matejkormuth.rpbuild.generators.sounds.FileTreeSoundsJsonGenerator *(generates sounds.json from files in sounds directory)*
 
 
 **FileCompiler** class behaves like compiler of files. It opens generated and supplied files from git and processes them (for example minifies jsons or optimizes png images).
-These compilers are available in core:
+These compilers are available out of box:
 
 - eu.matejkormuth.rpbuild.compilers.JsonCompressor *(minifies jsons)*
+- eu.matejkormuth.rpbuild.compilers.ImageResizer *(resizes images to specified size)*
 - eu.matejkormuth.rpbuild.compilers.JsonCommenter *(may not work, not recommended for use)*
 
 ### Xml configuration
@@ -79,6 +80,15 @@ The best way to make configuration file for your build is to use XML configurati
         </compile>
         <!-- Specifies to run Compiler (JsonCompressor - this one compresess jsons) in build. Files attribute specifies type of files, which this compiler compiles. -->
         <compile class="eu.matejkormuth.rpbuild.compilers.JsonCompressor" files=".json"/>
+        <!-- Specifies to run Image Resize in build on all .png files. -->
+        <compile class="eu.matejkormuth.rpbuild.compilers.ImageResizer" files=".png">
+        	<settings>
+        		<!-- Interpolation setting. Can be nearest, bilinear or bicubic. -->
+            	<setting key="interpolation" value="nearest" />
+            	<!-- Max image resolution in pixels. Put 64 if you want 64x64 resource pack. -->
+            	<setting key="maxResolution" value="64" />
+            </settings>
+        </compile>
     </build>
     <!-- Filters - endings of files which will be excluded in target zip file. -->
     <filters>
@@ -145,7 +155,7 @@ You can do this by adding build phase to your `pom.xml`.
 </plugin>
 ```
 
-Don't forget to add plugin repository becaus rpbuild-maven-plugin is currently not in central repo.
+Don't forget to add plugin repository because rpbuild-maven-plugin is currently not in maven central repo.
 
 ```xml
 <pluginRepositories>
