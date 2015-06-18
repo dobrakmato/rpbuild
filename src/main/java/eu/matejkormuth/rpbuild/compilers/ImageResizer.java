@@ -33,7 +33,7 @@ import eu.matejkormuth.rpbuild.OpenedFile;
 
 public class ImageResizer extends FileCompiler {
 
-	private int maxResolution;	
+	private int maxResolution;
 	private int interpolationType; // AffineTransformOp
 
 	@Override
@@ -71,22 +71,28 @@ public class ImageResizer extends FileCompiler {
 
 	@Override
 	public void compile(OpenedFile file) throws Exception {
+
 		BufferedImage srcImg = ImageIO.read(new ByteArrayInputStream(file
 				.getContents()));
 
-		float aspectRatio = (float) srcImg.getHeight()
-				/ (float) srcImg.getWidth();
-		int newWidth = srcImg.getWidth() / maxResolution;
-		int newHeight = (int) (aspectRatio * newWidth);
+		// Resize only files bigger than max. resolution.
+		if (srcImg.getWidth() > maxResolution) {
+			log.info("Resizing file: " + file.getPath().toString());
 
-		BufferedImage scaledImg = getScaledImage(srcImg, newWidth, newHeight);
+			float aspectRatio = (float) srcImg.getHeight()
+					/ (float) srcImg.getWidth();
+			int newHeight = (int) (aspectRatio * maxResolution);
 
-		// Save new image to file.
-		ByteArrayOutputStream baos = new ByteArrayOutputStream();
-		ImageIO.write(scaledImg, "png", baos);
-		baos.flush();
-		file.setContents(baos.toByteArray());
-		baos.close();
+			BufferedImage scaledImg = getScaledImage(srcImg, maxResolution,
+					newHeight);
+
+			// Save new image to file.
+			ByteArrayOutputStream baos = new ByteArrayOutputStream();
+			ImageIO.write(scaledImg, "png", baos);
+			baos.flush();
+			file.setContents(baos.toByteArray());
+			baos.close();
+		}
 	}
 
 	private BufferedImage getScaledImage(BufferedImage image, int width,
@@ -98,11 +104,11 @@ public class ImageResizer extends FileCompiler {
 		double scaleY = (double) height / imageHeight;
 		AffineTransform scaleTransform = AffineTransform.getScaleInstance(
 				scaleX, scaleY);
-		AffineTransformOp scaleOp = new AffineTransformOp(
-				scaleTransform, interpolationType);
+		AffineTransformOp scaleOp = new AffineTransformOp(scaleTransform,
+				interpolationType);
 
-		return scaleOp.filter(image, new BufferedImage(width, height,
-				image.getType()));
+		return scaleOp.filter(image,
+				new BufferedImage(width, height, image.getType()));
 	}
 
 }
