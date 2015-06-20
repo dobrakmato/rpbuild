@@ -72,6 +72,13 @@ public class ImageResizer extends FileCompiler {
 	@Override
 	public void compile(OpenedFile file) throws Exception {
 
+		// Resize only block textures and items. Resizing other files may crash
+		// the game.
+		if (!(file.getPath().startsWith("assets/minecraft/textures/blocks") || file
+				.getPath().startsWith("assets/minecraft/textures/items"))) {
+			return;
+		}
+
 		BufferedImage srcImg = ImageIO.read(new ByteArrayInputStream(file
 				.getContents()));
 
