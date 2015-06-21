@@ -97,7 +97,6 @@
           </execution>
         </executions>
       </plugin>
-      <!-- Disable Java 8 javadoc doclint. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
@@ -109,7 +108,7 @@
               <goal>jar</goal>
             </goals>
             <configuration>
-              <additionalparam>-Xdoclint:none</additionalparam>
+              <failOnError>false</failOnError>
             </configuration>
           </execution>
         </executions>
