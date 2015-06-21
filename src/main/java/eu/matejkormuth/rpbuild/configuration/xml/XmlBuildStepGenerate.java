@@ -48,7 +48,7 @@ public class XmlBuildStepGenerate implements BuildStepGenerate {
 
 	@XmlElement(name = "setting")
 	@XmlElementWrapper(name = "settings")
-	protected Setting[] settings;
+	protected XmlSetting[] settings;
 
 	protected transient Class<?> clazzObj;
 

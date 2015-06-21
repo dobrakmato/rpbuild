@@ -52,13 +52,13 @@ public class XmlBuildStepCompile implements BuildStepCompile {
 
 	@XmlElement(name = "setting")
 	@XmlElementWrapper(name = "settings")
-	protected Setting[] settings;
+	protected XmlSetting[] settings;
 
 	public XmlBuildStepCompile() {
 	}
 
 	public XmlBuildStepCompile(Class<?> compilerClass, String fileType,
-			Setting[] settings) {
+			XmlSetting[] settings) {
 		this.clazz = compilerClass.getCanonicalName();
 		this.clazzObj = compilerClass;
 		this.fileType = fileType;
