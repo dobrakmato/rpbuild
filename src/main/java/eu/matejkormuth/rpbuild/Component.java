@@ -140,6 +140,8 @@ public abstract class Component {
 	 * 
 	 * @param key
 	 *            key of setting
+	 * @param defaultValue value that should be used when there is no value specificated
+	 *           
 	 * @return XmlSetting for specified key or default value if setting not
 	 *         present
 	 */

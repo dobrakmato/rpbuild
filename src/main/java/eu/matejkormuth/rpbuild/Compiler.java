@@ -38,6 +38,7 @@ public abstract class Compiler extends Component {
 	 * Compiles specified source file.
 	 * 
 	 * @param file file to compile
+	 * @throws BuildError when files couldn't be compiled
 	 */
 	public abstract void compile(OpenedFile file) throws BuildError;
 }

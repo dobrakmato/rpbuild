@@ -60,7 +60,7 @@ public class FileFinder extends SimpleFileVisitor<Path> {
 	 * @param start
 	 *            path to start.
 	 * @return amount of files found
-	 * @throws IOException
+	 * @throws IOException if an I/O error is thrown by a visitor method
 	 */
 	public int find(Path start) throws IOException {
 		this.paths.clear();
@@ -105,12 +105,13 @@ public class FileFinder extends SimpleFileVisitor<Path> {
 	 * Returns list of all found files with specified file type (extension) as
 	 * File list.
 	 * 
+	 * @param fileExtension file extension to look for
 	 * @return list of files
 	 */
-	public List<File> getFiles(String fileType) {
+	public List<File> getFiles(String fileExtension) {
 		List<File> files = new ArrayList<File>();
 		for (Path p : this.paths) {
-			if (p.endsWith(fileType)) {
+			if (p.endsWith(fileExtension)) {
 				files.add(p.toFile());
 			}
 		}
@@ -121,6 +122,7 @@ public class FileFinder extends SimpleFileVisitor<Path> {
 	 * Returns list of all found files with specified file type (extension) as
 	 * Path list.
 	 * 
+	 * @param fileType file extension to look for
 	 * @return list of paths
 	 */
 	public List<Path> getPaths(String fileExtension) {

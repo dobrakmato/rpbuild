@@ -50,13 +50,13 @@ public class ZipArchive {
 	private Path absolute;
 
 	/**
-	 * Creates new instance of zip archive.
+	 * Creates new instance of ZIP archive.
 	 * 
 	 * @param absolutePath
 	 *            absolute path that will be used to resolve path when calling
 	 *            <code>addFile(Path relative)</code>.
-	 * @param out
-	 *            archive file
+	 * @param out archive file
+	 * @param compressionLevel ZIP compression level
 	 */
 	public ZipArchive(Path absolutePath, File out, int compressionLevel) {
 		try {
@@ -76,7 +76,7 @@ public class ZipArchive {
 	 * 
 	 * @param path
 	 *            path of file to be added
-	 * @throws IOException
+	 * @throws IOException if an I/O error occurs.
 	 */
 	public void addFile(Path path) throws IOException {
 		log.debug("Adding file: {}", path);
