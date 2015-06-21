@@ -26,43 +26,38 @@
  *
  * "Minecraft" is a trademark of Mojang AB
  */
-package eu.matejkormuth.rpbuild.compilers;
+package eu.matejkormuth.rpbuild.exceptions;
 
-import eu.matejkormuth.rpbuild.Compiler;
-import eu.matejkormuth.rpbuild.OpenedFile;
-import eu.matejkormuth.rpbuild.exceptions.BuildError;
+/**
+ * Represents unrecoverable error in resource pack build process. The build
+ * failes after this error is thrown. All other build errors are extending this
+ * class.
+ */
+public class BuildError extends Exception {
+	private static final long serialVersionUID = -4729716683932577398L;
 
-public class JsonCommenter extends Compiler {
-
-	private String comment;
-
-	@Override
-	public void onInit() {
-		this.comment = this.getSetting("comment",
-				"Please set comment message in your build config.").getValue();
-
-		log.warn("We are sorry, but JsonCommenter is broken atm, please do not use it!");
+	public BuildError() {
+		super();
 	}
 
-	@Override
-	public void compile(OpenedFile file) throws BuildError {
-		if (this.getSetting("formatted", "false").equals("true")) {
-			this.commentFormatted(file);
-		} else {
-			this.commentUnformatted(file);
-		}
+	public BuildError(String message, Throwable cause,
+			boolean enableSuppression, boolean writableStackTrace) {
+		super(message, cause, enableSuppression, writableStackTrace);
 	}
 
-	private void commentUnformatted(OpenedFile file) {
-		String contents = new String(file.getContents(), this.getCharset());
-		// { "__comment" : "comment value",
-		contents = contents.replaceFirst("\\{", "{\"__comment\":\""
-				+ this.comment + "\",");
-		file.setContents(contents.getBytes(this.getCharset()));
+	public BuildError(String message, Throwable cause) {
+		super(message, cause);
 	}
 
-	private void commentFormatted(OpenedFile file) {
-		// Until someone starts complaining.
-		this.commentUnformatted(file);
+	public BuildError(String message) {
+		super(message);
+	}
+
+	public BuildError(Throwable cause) {
+		super(cause);
+	}
+
+	public BuildError(Exception e) {
+		super(e);
 	}
 }

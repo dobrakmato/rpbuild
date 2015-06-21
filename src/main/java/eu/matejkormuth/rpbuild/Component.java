@@ -1,21 +1,30 @@
-/*
- *  rpbuild - RPBuild is a build system for Minecraft resource packs.
- *  Copyright (C) 2015 Matej Kormuth 
+/**
+ * Minecraft resource pack compiler and assembler - rpBuild - Build system for Minecraft resource packs.
+ * Copyright (c) 2015, Matej Kormuth <http://www.github.com/dobrakmato>
+ * All rights reserved.
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *  
- *  "Minecraft" is a trademark of Mojang AB
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation and/or
+ * other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * "Minecraft" is a trademark of Mojang AB
  */
 package eu.matejkormuth.rpbuild;
 
@@ -27,29 +36,29 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eu.matejkormuth.rpbuild.api.Project;
+import eu.matejkormuth.rpbuild.api.Setting;
 import eu.matejkormuth.rpbuild.configuration.xml.XmlSetting;
+import eu.matejkormuth.rpbuild.exceptions.InvalidSettingsError;
 
 /**
  * Abstract class that represents build system component. Contains some useful
  * methods.
  * 
- * @see FileCompiler
- * @see FileGenerator
+ * @see Compiler
+ * @see Generator
  */
 public abstract class Component {
-	protected static Logger log;
+	// Logger object by default.
+	protected final Logger log;
 
 	private Assembler assembler;
-	private XmlSetting[] settings;
+	private Setting[] settings;
 
 	public Component() {
 		log = LoggerFactory.getLogger(this.getClass());
 	}
 
-	public void init() {
-	}
-
-	protected void setAssembler(Assembler assembler) {
+	void setAssembler(Assembler assembler) {
 		if (this.assembler != null) {
 			throw new IllegalAccessError(
 					"Assembler has been already set for this component!");
@@ -57,12 +66,26 @@ public abstract class Component {
 		this.assembler = assembler;
 	}
 
-	protected void setSettings(XmlSetting[] settings) {
+	void setSettings(Setting[] settings) {
 		if (this.settings != null) {
 			throw new IllegalAccessError(
 					"Settings have been already set for this component!");
 		}
 		this.settings = settings;
+	}
+
+	// This method should be overridden by concrete classes.
+	/**
+	 * Initializes component's settings and state. <b>Should be overridden</b>.
+	 * 
+	 * @throws InvalidSettingsError
+	 *             when settings are invalid
+	 */
+	public void onInit() throws InvalidSettingsError {
+	}
+
+	public Logger getLogger() {
+		return log;
 	}
 
 	/**
@@ -84,7 +107,7 @@ public abstract class Component {
 	}
 
 	/**
-	 * Returns absolute path from resourcepack root and relative path string.
+	 * Returns absolute path from resource pack root and relative path string.
 	 * 
 	 * @param relative
 	 *            relative path as string
@@ -102,8 +125,8 @@ public abstract class Component {
 	 *            key of setting
 	 * @return XmlSetting for specified key or null if setting not present
 	 */
-	public XmlSetting getSetting(String key) {
-		for (XmlSetting setting : this.settings) {
+	public Setting getSetting(String key) {
+		for (Setting setting : this.settings) {
 			if (setting.getKey().equals(key)) {
 				return setting;
 			}
@@ -120,8 +143,8 @@ public abstract class Component {
 	 * @return XmlSetting for specified key or default value if setting not
 	 *         present
 	 */
-	public XmlSetting getSetting(String key, String defaultValue) {
-		for (XmlSetting setting : this.settings) {
+	public Setting getSetting(String key, String defaultValue) {
+		for (Setting setting : this.settings) {
 			if (setting.getKey().equals(key)) {
 				return setting;
 			}

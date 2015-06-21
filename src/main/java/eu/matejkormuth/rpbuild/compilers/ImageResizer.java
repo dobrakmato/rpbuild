@@ -1,21 +1,30 @@
-/*
- *  rpbuild - RPBuild is a build system for Minecraft resource packs.
- *  Copyright (C) 2015 Matej Kormuth 
+/**
+ * Minecraft resource pack compiler and assembler - rpBuild - Build system for Minecraft resource packs.
+ * Copyright (c) 2015, Matej Kormuth <http://www.github.com/dobrakmato>
+ * All rights reserved.
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *  
- *  "Minecraft" is a trademark of Mojang AB
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation and/or
+ * other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * "Minecraft" is a trademark of Mojang AB
  */
 package eu.matejkormuth.rpbuild.compilers;
 
@@ -27,30 +36,33 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
-import eu.matejkormuth.rpbuild.BuildError;
-import eu.matejkormuth.rpbuild.FileCompiler;
-import eu.matejkormuth.rpbuild.OpenedFile;
 
-public class ImageResizer extends FileCompiler {
+import eu.matejkormuth.rpbuild.Compiler;
+import eu.matejkormuth.rpbuild.OpenedFile;
+import eu.matejkormuth.rpbuild.exceptions.BuildError;
+import eu.matejkormuth.rpbuild.exceptions.InvalidSettingsError;
+
+public class ImageResizer extends Compiler {
 
 	private int maxResolution;
 	private int interpolationType; // AffineTransformOp
 
 	@Override
-	public void init() {
+	public void onInit() throws InvalidSettingsError {
+
+		// Initialize settings.
 		String maxRes_s = this.getSetting("maxResolution").getValue();
 
 		if (maxRes_s == null) {
-			throw new BuildError(new RuntimeException(
-					"Invalid configuration! MaxResoultion must be set!"));
+			throw new InvalidSettingsError(
+					"Invalid configuration! MaxResoultion must be set!");
 		}
 
 		maxResolution = Integer.valueOf(maxRes_s);
 
 		if (maxResolution <= 0) {
-			throw new BuildError(
-					new RuntimeException(
-							"Invalid configuration value! Please set maxResoultion to number higher then 0."));
+			throw new InvalidSettingsError(
+					"Please set maxResoultion to number higher then 0.");
 		}
 
 		String interpolation = this.getSetting("interpolation", "nearest")
@@ -63,15 +75,13 @@ public class ImageResizer extends FileCompiler {
 		} else if (interpolation.equalsIgnoreCase("bicubic")) {
 			interpolationType = AffineTransformOp.TYPE_BICUBIC;
 		} else {
-			throw new BuildError(
-					new RuntimeException(
-							"Invalid configuration value! Please set interpolationType to 'nearest', 'bilinear' or 'bicubic'!"));
+			throw new InvalidSettingsError(
+					"Please set interpolationType to 'nearest', 'bilinear' or 'bicubic'!");
 		}
 	}
 
 	@Override
-	public void compile(OpenedFile file) throws Exception {
-
+	public void compile(OpenedFile file) throws BuildError {
 		// Resize only block textures and items. Resizing other files may crash
 		// the game.
 		if (!(file.getPath().startsWith("assets/minecraft/textures/blocks") || file
@@ -79,27 +89,33 @@ public class ImageResizer extends FileCompiler {
 			return;
 		}
 
-		BufferedImage srcImg = ImageIO.read(new ByteArrayInputStream(file
-				.getContents()));
+		try {
+			BufferedImage srcImg = ImageIO.read(new ByteArrayInputStream(file
+					.getContents()));
 
-		// Resize only files bigger than max. resolution.
-		if (srcImg.getWidth() > maxResolution) {
-			log.info("Resizing file: " + file.getPath().toString());
+			// Resize only files bigger than max. resolution.
+			if (srcImg.getWidth() > maxResolution) {
+				log.info("Resizing file: " + file.getPath().toString());
 
-			float aspectRatio = (float) srcImg.getHeight()
-					/ (float) srcImg.getWidth();
-			int newHeight = (int) (aspectRatio * maxResolution);
+				float aspectRatio = (float) srcImg.getHeight()
+						/ (float) srcImg.getWidth();
+				int newHeight = (int) (aspectRatio * maxResolution);
 
-			BufferedImage scaledImg = getScaledImage(srcImg, maxResolution,
-					newHeight);
+				BufferedImage scaledImg = getScaledImage(srcImg, maxResolution,
+						newHeight);
 
-			// Save new image to file.
-			ByteArrayOutputStream baos = new ByteArrayOutputStream();
-			ImageIO.write(scaledImg, "png", baos);
-			baos.flush();
-			file.setContents(baos.toByteArray());
-			baos.close();
+				// Save new image to file.
+				ByteArrayOutputStream baos = new ByteArrayOutputStream();
+				ImageIO.write(scaledImg, "png", baos);
+				baos.flush();
+				file.setContents(baos.toByteArray());
+				baos.close();
+
+			}
+		} catch (IOException e) {
+			throw new BuildError(e);
 		}
+
 	}
 
 	private BufferedImage getScaledImage(BufferedImage image, int width,
@@ -112,7 +128,7 @@ public class ImageResizer extends FileCompiler {
 		AffineTransform scaleTransform = AffineTransform.getScaleInstance(
 				scaleX, scaleY);
 		AffineTransformOp scaleOp = new AffineTransformOp(scaleTransform,
-				interpolationType);
+				this.interpolationType);
 
 		return scaleOp.filter(image,
 				new BufferedImage(width, height, image.getType()));

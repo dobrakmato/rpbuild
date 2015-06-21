@@ -26,43 +26,20 @@
  *
  * "Minecraft" is a trademark of Mojang AB
  */
-package eu.matejkormuth.rpbuild.compilers;
+package eu.matejkormuth.rpbuild;
 
-import eu.matejkormuth.rpbuild.Compiler;
-import eu.matejkormuth.rpbuild.OpenedFile;
 import eu.matejkormuth.rpbuild.exceptions.BuildError;
 
-public class JsonCommenter extends Compiler {
-
-	private String comment;
-
-	@Override
-	public void onInit() {
-		this.comment = this.getSetting("comment",
-				"Please set comment message in your build config.").getValue();
-
-		log.warn("We are sorry, but JsonCommenter is broken atm, please do not use it!");
-	}
-
-	@Override
-	public void compile(OpenedFile file) throws BuildError {
-		if (this.getSetting("formatted", "false").equals("true")) {
-			this.commentFormatted(file);
-		} else {
-			this.commentUnformatted(file);
-		}
-	}
-
-	private void commentUnformatted(OpenedFile file) {
-		String contents = new String(file.getContents(), this.getCharset());
-		// { "__comment" : "comment value",
-		contents = contents.replaceFirst("\\{", "{\"__comment\":\""
-				+ this.comment + "\",");
-		file.setContents(contents.getBytes(this.getCharset()));
-	}
-
-	private void commentFormatted(OpenedFile file) {
-		// Until someone starts complaining.
-		this.commentUnformatted(file);
-	}
+/**
+ * Specifies object that generates file(s).
+ */
+public abstract class Generator extends Component {
+	/**
+	 * Starts generation process of this file generator instance.
+	 * 
+	 * @return result of generation process as {@link OpenedFile}.
+	 * @throws BuildError
+	 *             when there is problem with generation of file
+	 */
+	public abstract OpenedFile generate() throws BuildError;
 }

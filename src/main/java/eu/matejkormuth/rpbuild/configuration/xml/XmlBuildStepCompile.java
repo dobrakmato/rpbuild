@@ -1,21 +1,30 @@
-/*
- *  rpbuild - RPBuild is a build system for Minecraft resource packs.
- *  Copyright (C) 2015 Matej Kormuth 
+/**
+ * Minecraft resource pack compiler and assembler - rpBuild - Build system for Minecraft resource packs.
+ * Copyright (c) 2015, Matej Kormuth <http://www.github.com/dobrakmato>
+ * All rights reserved.
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *  
- *  "Minecraft" is a trademark of Mojang AB
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation and/or
+ * other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * "Minecraft" is a trademark of Mojang AB
  */
 package eu.matejkormuth.rpbuild.configuration.xml;
 
@@ -25,12 +34,13 @@ import javax.xml.bind.annotation.XmlAttribute;
 import javax.xml.bind.annotation.XmlElement;
 import javax.xml.bind.annotation.XmlElementWrapper;
 
-import eu.matejkormuth.rpbuild.BuildError;
-import eu.matejkormuth.rpbuild.FileCompiler;
+import eu.matejkormuth.rpbuild.Compiler;
 import eu.matejkormuth.rpbuild.api.BuildStepCompile;
+import eu.matejkormuth.rpbuild.api.Setting;
+import eu.matejkormuth.rpbuild.exceptions.InvalidComponentError;
 
 @XmlAccessorType(XmlAccessType.FIELD)
-public class XmlBuildStepCompile extends BuildStepCompile {
+public class XmlBuildStepCompile implements BuildStepCompile {
 
 	@XmlAttribute(name = "class")
 	protected String clazz;
@@ -42,13 +52,13 @@ public class XmlBuildStepCompile extends BuildStepCompile {
 
 	@XmlElement(name = "setting")
 	@XmlElementWrapper(name = "settings")
-	protected XmlSetting[] settings;
+	protected Setting[] settings;
 
 	public XmlBuildStepCompile() {
 	}
 
 	public XmlBuildStepCompile(Class<?> compilerClass, String fileType,
-			XmlSetting[] settings) {
+			Setting[] settings) {
 		this.clazz = compilerClass.getCanonicalName();
 		this.clazzObj = compilerClass;
 		this.fileType = fileType;
@@ -71,13 +81,20 @@ public class XmlBuildStepCompile extends BuildStepCompile {
 	}
 
 	@Override
-	public FileCompiler getCompiler() throws Exception {
-		Object obj = this.getComponentClass().getConstructor().newInstance();
-		if (obj instanceof FileCompiler) {
-			return (FileCompiler) obj;
-		} else {
-			throw new RuntimeException("Class '" + this.getComponentClassName()
-					+ "' is not a Compiler class!");
+	public Compiler getCompiler() throws InvalidComponentError {
+		try {
+			Object obj = this.getComponentClass().getConstructor()
+					.newInstance();
+
+			if (obj instanceof Compiler) {
+				return (Compiler) obj;
+			} else {
+				throw new InvalidComponentError("Class '"
+						+ this.getComponentClassName()
+						+ "' is not a Compiler class!");
+			}
+		} catch (Exception e) {
+			throw new InvalidComponentError(e);
 		}
 	}
 
@@ -90,19 +107,19 @@ public class XmlBuildStepCompile extends BuildStepCompile {
 		return clazz;
 	}
 
-	public Class<?> getComponentClass() {
+	public Class<?> getComponentClass() throws InvalidComponentError {
 		if (clazzObj == null) {
 			try {
 				return (clazzObj = Class.forName(this.clazz));
 			} catch (ClassNotFoundException e) {
-				throw new BuildError(e);
+				throw new InvalidComponentError(e);
 			}
 		} else {
 			return clazzObj;
 		}
 	}
 
-	public XmlSetting[] getSettings() {
+	public Setting[] getSettings() {
 		return settings;
 	}
 }

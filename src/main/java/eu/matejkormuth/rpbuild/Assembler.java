@@ -1,21 +1,30 @@
-/*
- *  rpbuild - RPBuild is a build system for Minecraft resource packs.
- *  Copyright (C) 2015 Matej Kormuth 
+/**
+ * Minecraft resource pack compiler and assembler - rpBuild - Build system for Minecraft resource packs.
+ * Copyright (c) 2015, Matej Kormuth <http://www.github.com/dobrakmato>
+ * All rights reserved.
  *
- *  This program is free software: you can redistribute it and/or modify
- *  it under the terms of the GNU General Public License as published by
- *  the Free Software Foundation, either version 3 of the License, or
- *  (at your option) any later version.
- *  
- *  This program is distributed in the hope that it will be useful,
- *  but WITHOUT ANY WARRANTY; without even the implied warranty of
- *  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- *  GNU General Public License for more details.
+ * Redistribution and use in source and binary forms, with or without modification,
+ * are permitted provided that the following conditions are met:
  *
- *  You should have received a copy of the GNU General Public License
- *  along with this program.  If not, see <http://www.gnu.org/licenses/>.
- *  
- *  "Minecraft" is a trademark of Mojang AB
+ * 1. Redistributions of source code must retain the above copyright notice, this
+ * list of conditions and the following disclaimer.
+ *
+ * 2. Redistributions in binary form must reproduce the above copyright notice,
+ * this list of conditions and the following disclaimer in the documentation and/or
+ * other materials provided with the distribution.
+ *
+ * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
+ * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+ * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+ * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE FOR
+ * ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+ * (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR SERVICES;
+ * LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER CAUSED AND ON
+ * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
+ * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
+ * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+ *
+ * "Minecraft" is a trademark of Mojang AB
  */
 package eu.matejkormuth.rpbuild;
 
@@ -34,9 +43,10 @@ import eu.matejkormuth.rpbuild.api.BuildStep;
 import eu.matejkormuth.rpbuild.api.BuildStepCompile;
 import eu.matejkormuth.rpbuild.api.BuildStepGenerate;
 import eu.matejkormuth.rpbuild.api.Project;
-import eu.matejkormuth.rpbuild.configuration.xml.XmlBuildStepCompile;
-import eu.matejkormuth.rpbuild.configuration.xml.XmlBuildStepGenerate;
-import eu.matejkormuth.rpbuild.configuration.xml.XmlSetting;
+import eu.matejkormuth.rpbuild.api.Setting;
+import eu.matejkormuth.rpbuild.exceptions.BuildError;
+import eu.matejkormuth.rpbuild.exceptions.InvalidComponentError;
+import eu.matejkormuth.rpbuild.exceptions.InvalidSettingsError;
 
 /**
  * Represents main part of build system. Assembles files and manages build
@@ -45,15 +55,19 @@ import eu.matejkormuth.rpbuild.configuration.xml.XmlSetting;
 public class Assembler {
 	private static final Logger log = LoggerFactory.getLogger(Assembler.class);
 
-	private List<FileGenerator> generators;
+	// List of all generator that should be run.
+	private List<Generator> generators;
+	// List of all pairs file extension - compiler(s) that should be run.
 	private List<CompilerListByFileExtension> compilerLists;
 	private FileFinder fileFinder;
 	private SimpleDateFormat dateTimeFormat;
 	private SimpleDateFormat timeSpanFormat;
+	// Build descriptor.
 	private Project project;
 
 	public Assembler(Project project) {
-		this.generators = new ArrayList<FileGenerator>();
+		// Create instances.
+		this.generators = new ArrayList<Generator>();
 		this.compilerLists = new ArrayList<CompilerListByFileExtension>();
 		this.dateTimeFormat = new SimpleDateFormat();
 		this.timeSpanFormat = new SimpleDateFormat("mm:ss.SSS");
@@ -62,21 +76,21 @@ public class Assembler {
 
 		// Add build steps.
 		for (BuildStep step : this.project.getBuild()) {
-			this.addBuildStep(step);
+			try {
+				this.addBuildStep(step);
+			} catch (InvalidSettingsError | InvalidComponentError e) {
+				log.error("Can't initialize build object graph!");
+				log.error("There is unresolved configuration error(s)!");
+				log.error("Exception: ", e);
+
+				// Terminate VM.
+				System.exit(1);
+			}
 		}
 
+		// Initialize file finder.
 		this.fileFinder = new FileFinder();
 		this.fileFinder.setIgnoreGit(this.project.isIgnoreGitFolders());
-	}
-
-	private void findFiles() {
-		log.info("Looking for files...");
-		try {
-			int count = this.fileFinder.find(this.project.getSrc());
-			log.info("Found {} files!", count);
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
 	}
 
 	public void build() {
@@ -84,6 +98,7 @@ public class Assembler {
 
 		long startTime = System.currentTimeMillis();
 
+		// First execute git pull.
 		if (this.project.isGitPull()) {
 			log.info("Git pull is enabled in this build! Pulling using shell commands (git stash drop & git pull).");
 			try {
@@ -100,41 +115,49 @@ public class Assembler {
 			} catch (IOException | InterruptedException e) {
 				log.error("Can't complete git pull! Giving up!", e);
 				printBuildEnd(System.currentTimeMillis() - startTime, "FAILURE");
-				// Stop executing build method.
-				return;
+
+				// Terminate VM.
+				System.exit(1);
 			}
 			printSeparator();
 		}
 
-		this.findFiles();
-
 		try {
-			this.generateFiles();
+			// Generate new files.
+			this.taskGenerate();
 
 			this.printSeparator();
+			// Find new generated files and files from git.
 			this.findFiles();
 
-			this.buildFiles();
-			this.assembly();
+			// Compiler files.
+			this.taskCompile();
+			// Assembly files in temporary directory (currently not used).
+			this.taskAssembly();
 
 			this.printSeparator();
+			// Find new files.
 			this.findFiles();
 
-			this.archive();
+			// Archive files to ZIP.
+			this.taskArchive();
 		} catch (BuildError error) {
+			// If some error(s) occurred, output them now.
 			log.error("Build failed: ", error);
 			printBuildEnd(System.currentTimeMillis() - startTime, "FAILURE");
-			return;
+
+			// Terminate VM.
+			System.exit(1);
 		}
 
+		// Looks like everything went normally.
 		long elapsedTime = System.currentTimeMillis() - startTime;
-
 		printBuildEnd(elapsedTime, "SUCCESS");
 	}
 
 	private void printBuildEnd(long elapsedTime, String status) {
 		printSeparator();
-		log.info("Build of project {} finished!", project.getProjectName());
+		log.info("Build of project {} had finished!", project.getProjectName());
 		printSeparator();
 		log.info("Status: {}", status);
 		log.info("Memory: {} MB / {} MB",
@@ -149,7 +172,7 @@ public class Assembler {
 	private void printBuildStart() {
 		printSeparator();
 		log.info("Build of project " + project.getProjectName()
-				+ " started at " + this.dateTimeFormat.format(new Date()));
+				+ " was started at " + this.dateTimeFormat.format(new Date()));
 		log.info("Used charset/encoding: " + this.project.getEncoding());
 		printSeparator();
 	}
@@ -158,32 +181,47 @@ public class Assembler {
 		log.info("------------------------------------------------------");
 	}
 
-	private void generateFiles() throws BuildError {
+	private void findFiles() throws BuildError {
+		log.info("Looking for files...");
+		try {
+			int count = this.fileFinder.find(this.project.getSrc());
+			log.info("Found {} files!", count);
+		} catch (IOException e) {
+			throw new BuildError(e);
+		}
+	}
+
+	private void taskGenerate() throws BuildError {
 		printSeparator();
 		int count = 0;
-		for (FileGenerator g : this.generators) {
+		// Run all generators.
+		for (Generator g : this.generators) {
 			log.info("Running generator: {}", g.getClass().getSimpleName());
-			try {
-				OpenedFile file = g.generate();
-				if (file == null) {
-					log.warn("Generator {} generated null file!", g.getClass()
-							.getSimpleName());
-					continue;
-				}
-				file.save();
-				count++;
-			} catch (Exception e) {
-				throw new BuildError(e);
+			// Request generator to generate file.
+			OpenedFile file = g.generate();
+			// Check for null.
+			if (file == null) {
+				log.warn("Generator {} generated null file!", g.getClass()
+						.getSimpleName());
+				// Skip to next generator without saving.
+				continue;
 			}
+			// Save generated file.
+			file.save();
+			// Increment generated files count.
+			count++;
 		}
 		log.info("Totally generated {} files!", count);
 	}
 
-	private void buildFiles() throws BuildError {
+	private void taskCompile() throws BuildError {
 		printSeparator();
 		log.info("Compiling files...");
 		int count = 0;
+		// For each extension compiler list.
 		for (CompilerListByFileExtension list : this.compilerLists) {
+
+			// Find all matching files.
 			List<Path> matchingFiles = this.fileFinder.getPaths(list
 					.getFileExtension());
 
@@ -191,12 +229,8 @@ public class Assembler {
 			for (Path path : matchingFiles) {
 				count++;
 				currentFile = new OpenedFile(path);
-				for (FileCompiler c : list) {
-					try {
-						c.compile(currentFile);
-					} catch (Exception e) {
-						throw new BuildError(e);
-					}
+				for (Compiler c : list) {
+					c.compile(currentFile);
 				}
 				currentFile.save();
 			}
@@ -204,31 +238,34 @@ public class Assembler {
 		log.info("Totally compiled {} files!", count);
 	}
 
-	private void assembly() {
+	private void taskAssembly() {
 		printSeparator();
 		log.info("Assembling files together...");
 	}
 
-	private void archive() {
+	private void taskArchive() throws BuildError {
 		printSeparator();
 		log.info("Archiving assebled files to zip file...");
 		log.info("File name: {}", this.project.getTarget().toString());
 
+		int count = 0;
+		ZipArchive zipper = new ZipArchive(
+				this.project.getSrc().toAbsolutePath(), 
+				this.project.getTarget().toFile(), 
+				this.project.getCompressionLevel());
+		// Add files to zip.
 		try {
-			int count = 0;
-			ZipArchive zipper = new ZipArchive(this.project.getSrc()
-					.toAbsolutePath(), this.project.getTarget().toFile());
 			for (Path path : this.fileFinder.getPaths()) {
 				if (!isFiltered(path)) {
 					zipper.addFile(path);
 					count++;
 				}
 			}
-			zipper.close();
-			log.info("Created archive with {} files!", count);
-		} catch (Exception e) {
-			throw new BuildError(e);
+		} catch (IOException e) {
+			throw new BuildError("Can't build zip file!", e);
 		}
+		zipper.close();
+		log.info("Created archive with {} files!", count);
 	}
 
 	private boolean isFiltered(Path path) {
@@ -240,73 +277,67 @@ public class Assembler {
 		return false;
 	}
 
-	public void addBuildStep(BuildStep buildStep) {
-		try {
-			if (buildStep instanceof BuildStepCompile) {
-				if (buildStep instanceof XmlBuildStepCompile) {
-					this.addCompileStep(
-							((XmlBuildStepCompile) buildStep).getCompiler(),
-							((XmlBuildStepCompile) buildStep).getFileTypes()[0],
-							((XmlBuildStepCompile) buildStep).getSettings());
-				} else {
-					this.addCompileStep(
-							((BuildStepCompile) buildStep).getCompiler(),
-							((BuildStepCompile) buildStep).getFileTypes()[0],
-							new XmlSetting[0]);
-				}
-			} else if (buildStep instanceof BuildStepGenerate) {
-				if (buildStep instanceof XmlBuildStepGenerate) {
-					this.addGenerateStep(
-							((XmlBuildStepGenerate) buildStep).getGenerator(),
-							((XmlBuildStepGenerate) buildStep).getSettings());
-				} else {
-					this.addGenerateStep(
-							((BuildStepGenerate) buildStep).getGenerator(),
-							new XmlSetting[0]);
-				}
-			} else {
-				// Unsupported type.
-				log.warn("Tried to register unsupported build step: {}",
-						buildStep.getClass().getSimpleName());
-			}
-		} catch (Exception e) {
-			throw new BuildError(e);
-		}
-	}
-
-	private void addCompileStep(FileCompiler compiler, String fileExtension,
-			XmlSetting[] settings) {
-		CompilerListByFileExtension compilerList = findBuilder(fileExtension);
-		if (compilerList == null) {
-			CompilerListByFileExtension newList = new CompilerListByFileExtension(
-					fileExtension);
-			compiler.setAssembler(this);
-			compiler.setSettings(settings);
-			compiler.init();
-			newList.add(compiler);
-			this.compilerLists.add(newList);
+	public void addBuildStep(BuildStep buildStep) throws InvalidSettingsError,
+			InvalidComponentError {
+		// If-else for different build steps.
+		if (buildStep instanceof BuildStepCompile) {
+			// Add compile type step.
+			this.addCompileStep(((BuildStepCompile) buildStep).getCompiler(),
+					((BuildStepCompile) buildStep).getFileTypes()[0],
+					((BuildStepCompile) buildStep).getSettings());
+		} else if (buildStep instanceof BuildStepGenerate) {
+			// Add generate type step.
+			this.addGenerateStep(
+					((BuildStepGenerate) buildStep).getGenerator(),
+					((BuildStepGenerate) buildStep).getSettings());
 		} else {
-			compiler.setAssembler(this);
-			compiler.setSettings(settings);
-			compiler.init();
-			compilerList.add(compiler);
+			// Unsupported type.
+			log.warn("Tried to register unsupported build step: {}", buildStep
+					.getClass().getSimpleName());
 		}
 	}
 
-	private void addGenerateStep(FileGenerator generator, XmlSetting[] settings) {
+	private void addCompileStep(Compiler compiler, String fileExtension,
+			Setting[] settings) throws InvalidSettingsError {
+		// Acquire list for this file extension.
+		CompilerListByFileExtension compilerList = getOrCreateCompilerList(fileExtension);
+
+		// Setup compiler.
+		compiler.setAssembler(this);
+		compiler.setSettings(settings);
+		compiler.onInit();
+
+		// Add compiler to list.
+		compilerList.add(compiler);
+	}
+
+	private void addGenerateStep(Generator generator, Setting[] settings)
+			throws InvalidSettingsError {
+		// Set up generator.
 		generator.setAssembler(this);
 		generator.setSettings(settings);
-		generator.init();
+		generator.onInit();
+
+		// Add generator to list.
 		this.generators.add(generator);
 	}
 
-	private CompilerListByFileExtension findBuilder(String fileExtension) {
+	private CompilerListByFileExtension getOrCreateCompilerList(
+			String fileExtension) {
+		// Search for list where file extension is same.
 		for (CompilerListByFileExtension b : this.compilerLists) {
 			if (b.getFileExtension().equalsIgnoreCase(fileExtension)) {
 				return b;
 			}
 		}
-		return null;
+
+		// We need to create new list.
+		CompilerListByFileExtension list = new CompilerListByFileExtension(
+				fileExtension);
+		// Add created list to compiler lists.
+		this.compilerLists.add(list);
+		// Return newly created list.
+		return list;
 	}
 
 	public Project getProject() {

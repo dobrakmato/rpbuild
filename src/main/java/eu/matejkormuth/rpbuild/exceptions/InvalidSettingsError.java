@@ -26,43 +26,30 @@
  *
  * "Minecraft" is a trademark of Mojang AB
  */
-package eu.matejkormuth.rpbuild.compilers;
+package eu.matejkormuth.rpbuild.exceptions;
 
-import eu.matejkormuth.rpbuild.Compiler;
-import eu.matejkormuth.rpbuild.OpenedFile;
-import eu.matejkormuth.rpbuild.exceptions.BuildError;
+public class InvalidSettingsError extends BuildError {
+	private static final long serialVersionUID = 7269182416002146347L;
 
-public class JsonCommenter extends Compiler {
-
-	private String comment;
-
-	@Override
-	public void onInit() {
-		this.comment = this.getSetting("comment",
-				"Please set comment message in your build config.").getValue();
-
-		log.warn("We are sorry, but JsonCommenter is broken atm, please do not use it!");
+	public InvalidSettingsError() {
+		super();
 	}
 
-	@Override
-	public void compile(OpenedFile file) throws BuildError {
-		if (this.getSetting("formatted", "false").equals("true")) {
-			this.commentFormatted(file);
-		} else {
-			this.commentUnformatted(file);
-		}
+	public InvalidSettingsError(String message, Throwable cause,
+			boolean enableSuppression, boolean writableStackTrace) {
+		super(message, cause, enableSuppression, writableStackTrace);
 	}
 
-	private void commentUnformatted(OpenedFile file) {
-		String contents = new String(file.getContents(), this.getCharset());
-		// { "__comment" : "comment value",
-		contents = contents.replaceFirst("\\{", "{\"__comment\":\""
-				+ this.comment + "\",");
-		file.setContents(contents.getBytes(this.getCharset()));
+	public InvalidSettingsError(String message, Throwable cause) {
+		super(message, cause);
 	}
 
-	private void commentFormatted(OpenedFile file) {
-		// Until someone starts complaining.
-		this.commentUnformatted(file);
+	public InvalidSettingsError(String message) {
+		super(message);
 	}
+
+	public InvalidSettingsError(Throwable cause) {
+		super(cause);
+	}
+
 }

@@ -26,43 +26,29 @@
  *
  * "Minecraft" is a trademark of Mojang AB
  */
-package eu.matejkormuth.rpbuild.compilers;
+package eu.matejkormuth.rpbuild.api;
 
-import eu.matejkormuth.rpbuild.Compiler;
-import eu.matejkormuth.rpbuild.OpenedFile;
-import eu.matejkormuth.rpbuild.exceptions.BuildError;
+import eu.matejkormuth.rpbuild.configuration.xml.XmlSetting;
 
-public class JsonCommenter extends Compiler {
+/**
+ * Represents key value pair. Both key and value are strings.
+ * 
+ * @see XmlSetting
+ */
+public interface Setting {
 
-	private String comment;
+	/**
+	 * Returns key associated with this setting.
+	 * 
+	 * @return key of this setting
+	 */
+	public abstract String getKey();
 
-	@Override
-	public void onInit() {
-		this.comment = this.getSetting("comment",
-				"Please set comment message in your build config.").getValue();
+	/**
+	 * Returns value associated with this setting.
+	 * 
+	 * @return value of this setting
+	 */
+	public abstract String getValue();
 
-		log.warn("We are sorry, but JsonCommenter is broken atm, please do not use it!");
-	}
-
-	@Override
-	public void compile(OpenedFile file) throws BuildError {
-		if (this.getSetting("formatted", "false").equals("true")) {
-			this.commentFormatted(file);
-		} else {
-			this.commentUnformatted(file);
-		}
-	}
-
-	private void commentUnformatted(OpenedFile file) {
-		String contents = new String(file.getContents(), this.getCharset());
-		// { "__comment" : "comment value",
-		contents = contents.replaceFirst("\\{", "{\"__comment\":\""
-				+ this.comment + "\",");
-		file.setContents(contents.getBytes(this.getCharset()));
-	}
-
-	private void commentFormatted(OpenedFile file) {
-		// Until someone starts complaining.
-		this.commentUnformatted(file);
-	}
 }

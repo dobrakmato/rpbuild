@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>eu.matejkormuth.starving</groupId>
   <artifactId>rpbuild</artifactId>
-  <version>1.0.2</version>
+  <version>1.0.3</version>
 
   <properties>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
@@ -29,6 +29,7 @@
   <name>Minecraft resource pack compiler and assembler</name>
   <build>
     <plugins>
+      <!-- Main class and manifest. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-jar-plugin</artifactId>
@@ -37,10 +38,12 @@
           <archive>
             <manifest>
               <mainClass>eu.matejkormuth.rpbuild.Bootstrap</mainClass>
+              <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
             </manifest>
           </archive>
         </configuration>
       </plugin>
+      <!-- To include dependencies. -->
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-shade-plugin</artifactId>
@@ -58,6 +61,7 @@
           </execution>
         </executions>
       </plugin>
+      <!-- Compile with Java 1.7 -->
       <plugin>
         <artifactId>maven-compiler-plugin</artifactId>
         <version>3.2</version>
@@ -65,6 +69,34 @@
           <source>1.7</source>
           <target>1.7</target>
         </configuration>
+      </plugin>
+      <!-- License task. -->
+      <!-- License plugin. -->
+      <plugin>
+        <groupId>com.mycila</groupId>
+        <artifactId>license-maven-plugin</artifactId>
+        <version>2.10</version>
+        <configuration>
+          <header>LICENSE-HEADER.txt</header>
+          <properties>
+            <owner>Matej Kormuth</owner>
+            <web>http://www.github.com/dobrakmato</web>
+          </properties>
+          <excludes>
+            <exclude>**/README</exclude>
+            <exclude>**/pom.xml</exclude>
+            <exclude>src/test/resources/**</exclude>
+            <exclude>src/main/resources/**</exclude>
+          </excludes>
+        </configuration>
+        <executions>
+          <execution>
+            <goals>
+              <goal>format</goal>
+            </goals>
+            <phase>validate</phase>
+          </execution>
+        </executions>
       </plugin>
     </plugins>
   </build>
@@ -77,6 +109,11 @@
   <description>rpBuild - Build system for Minecraft resource packs.</description>
   <ciManagement>
     <system>jenkins</system>
-    <url>http://ci.alpha.mtkn.eu/job/rpbuild/</url>
+    <url>http://ci.matejkormuth.eu/job/rpbuild/</url>
   </ciManagement>
+  <issueManagement>
+    <url>https://github.com/dobrakmato/rpbuild/issues</url>
+    <system>github</system>
+  </issueManagement>
+  <inceptionYear>2015</inceptionYear>
 </project>

@@ -26,43 +26,18 @@
  *
  * "Minecraft" is a trademark of Mojang AB
  */
-package eu.matejkormuth.rpbuild.compilers;
+package eu.matejkormuth.rpbuild;
 
-import eu.matejkormuth.rpbuild.Compiler;
-import eu.matejkormuth.rpbuild.OpenedFile;
 import eu.matejkormuth.rpbuild.exceptions.BuildError;
 
-public class JsonCommenter extends Compiler {
-
-	private String comment;
-
-	@Override
-	public void onInit() {
-		this.comment = this.getSetting("comment",
-				"Please set comment message in your build config.").getValue();
-
-		log.warn("We are sorry, but JsonCommenter is broken atm, please do not use it!");
-	}
-
-	@Override
-	public void compile(OpenedFile file) throws BuildError {
-		if (this.getSetting("formatted", "false").equals("true")) {
-			this.commentFormatted(file);
-		} else {
-			this.commentUnformatted(file);
-		}
-	}
-
-	private void commentUnformatted(OpenedFile file) {
-		String contents = new String(file.getContents(), this.getCharset());
-		// { "__comment" : "comment value",
-		contents = contents.replaceFirst("\\{", "{\"__comment\":\""
-				+ this.comment + "\",");
-		file.setContents(contents.getBytes(this.getCharset()));
-	}
-
-	private void commentFormatted(OpenedFile file) {
-		// Until someone starts complaining.
-		this.commentUnformatted(file);
-	}
+/**
+ * Represents object that build some type of file(s).
+ */
+public abstract class Compiler extends Component {
+	/**
+	 * Compiles specified source file.
+	 * 
+	 * @param file file to compile
+	 */
+	public abstract void compile(OpenedFile file) throws BuildError;
 }
