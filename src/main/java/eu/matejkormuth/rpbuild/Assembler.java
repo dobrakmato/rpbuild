@@ -29,8 +29,13 @@
 package eu.matejkormuth.rpbuild;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.nio.charset.Charset;
+import java.nio.file.FileVisitResult;
+import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.SimpleFileVisitor;
+import java.nio.file.attribute.BasicFileAttributes;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
@@ -83,8 +88,7 @@ public class Assembler {
 				log.error("There is unresolved configuration error(s)!");
 				log.error("Exception: ", e);
 
-				// Terminate VM.
-				System.exit(1);
+				terminate();
 			}
 		}
 
@@ -95,6 +99,19 @@ public class Assembler {
 
 	public void build() {
 		printBuildStart();
+
+		// Create temp directory to store files before putting in zip.
+		Path tempDirectory = null;
+		try {
+			tempDirectory = createTempDirectory();
+			// Request folder removal on rpbuild's exit.
+			tempDirectory.toFile().deleteOnExit();
+		} catch (BuildError e) {
+			log.error("Can't create temporary folder!", e);
+			printBuildEnd(0, "FAILURE");
+
+			terminate();
+		}
 
 		long startTime = System.currentTimeMillis();
 
@@ -116,10 +133,60 @@ public class Assembler {
 				log.error("Can't complete git pull! Giving up!", e);
 				printBuildEnd(System.currentTimeMillis() - startTime, "FAILURE");
 
-				// Terminate VM.
-				System.exit(1);
+				terminate();
 			}
 			printSeparator();
+		}
+
+		// Copy all files to temp directory.
+		try {
+			final Path sourcePath = this.getProject().getSrc();
+			final Path targetPath = tempDirectory;
+			Files.walkFileTree(sourcePath, new SimpleFileVisitor<Path>() {
+				@Override
+				public FileVisitResult preVisitDirectory(final Path dir,
+						final BasicFileAttributes attrs) throws IOException {
+					
+					// Ignore .git direcoties, we do not need to copy them.
+					if (dir.getFileName().toString().equalsIgnoreCase(".git")) {
+						return FileVisitResult.SKIP_SUBTREE;
+					}
+
+					Files.createDirectories(targetPath.resolve(sourcePath
+							.relativize(dir)));
+					return FileVisitResult.CONTINUE;
+				}
+
+				@Override
+				public FileVisitResult visitFile(final Path file,
+						final BasicFileAttributes attrs) throws IOException {
+					Files.copy(file,
+							targetPath.resolve(sourcePath.relativize(file)));
+					return FileVisitResult.CONTINUE;
+				}
+			});
+		} catch (Exception e) {
+			log.error("Can't copy source files to temporary folder!", e);
+			printBuildEnd(System.currentTimeMillis() - startTime, "FAILURE");
+
+			terminate();
+		}
+
+		// Set source in this instance of project to temp directory.
+		// This way all components will work as supposed because they
+		// are working relative to project's src path.
+		try {
+			Field srcField = this.project.getClass().getDeclaredField("src");
+			if (!srcField.isAccessible())
+				srcField.setAccessible(true);
+			srcField.set(this.project, tempDirectory);
+		} catch (Exception e) {
+			log.error("Internal error: Can't set project src to temp folder.",
+					e);
+			printBuildEnd(System.currentTimeMillis() - startTime, "FAILURE");
+
+			// Terminate VM.
+			terminate();
 		}
 
 		try {
@@ -146,13 +213,28 @@ public class Assembler {
 			log.error("Build failed: ", error);
 			printBuildEnd(System.currentTimeMillis() - startTime, "FAILURE");
 
-			// Terminate VM.
-			System.exit(1);
+			terminate();
 		}
 
 		// Looks like everything went normally.
 		long elapsedTime = System.currentTimeMillis() - startTime;
 		printBuildEnd(elapsedTime, "SUCCESS");
+	}
+
+	// This method is overridden in rpbuild-maven
+	// to not make Maven exit too, when rpbuild shuts down.
+	public void terminate() {
+		System.exit(1);
+	}
+
+	private Path createTempDirectory() throws BuildError {
+		try {
+			return Files.createTempDirectory("rpbuild_"
+					+ this.project.getProjectName().toLowerCase()
+							.replace(" ", "_").substring(0, 5));
+		} catch (IOException e) {
+			throw new BuildError("Can't create temporary directory!", e);
+		}
 	}
 
 	private void printBuildEnd(long elapsedTime, String status) {
@@ -249,9 +331,8 @@ public class Assembler {
 		log.info("File name: {}", this.project.getTarget().toString());
 
 		int count = 0;
-		ZipArchive zipper = new ZipArchive(
-				this.project.getSrc().toAbsolutePath(), 
-				this.project.getTarget().toFile(), 
+		ZipArchive zipper = new ZipArchive(this.project.getSrc()
+				.toAbsolutePath(), this.project.getTarget().toFile(),
 				this.project.getCompressionLevel());
 		// Add files to zip.
 		try {
