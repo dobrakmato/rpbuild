@@ -83,6 +83,7 @@
           </properties>
           <excludes>
             <exclude>**/README</exclude>
+            <exclude>**/package-info.java</exclude>
             <exclude>**/pom.xml</exclude>
             <exclude>src/test/resources/**</exclude>
             <exclude>src/main/resources/**</exclude>

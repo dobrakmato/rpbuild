@@ -122,7 +122,7 @@ public class FileFinder extends SimpleFileVisitor<Path> {
 	 * Returns list of all found files with specified file type (extension) as
 	 * Path list.
 	 * 
-	 * @param fileType file extension to look for
+	 * @param fileExtension file extension to look for
 	 * @return list of paths
 	 */
 	public List<Path> getPaths(String fileExtension) {

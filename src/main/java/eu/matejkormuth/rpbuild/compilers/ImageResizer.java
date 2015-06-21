@@ -84,8 +84,8 @@ public class ImageResizer extends Compiler {
 	public void compile(OpenedFile file) throws BuildError {
 		// Resize only block textures and items. Resizing other files may crash
 		// the game.
-		if (!(file.getPath().startsWith("assets/minecraft/textures/blocks") || file
-				.getPath().startsWith("assets/minecraft/textures/items"))) {
+		if (!file.getPath().toString().contains("assets/minecraft/textures/blocks") && 
+				!file.getPath().toString().contains("assets/minecraft/textures/items")) {
 			return;
 		}
 
