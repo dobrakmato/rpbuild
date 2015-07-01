@@ -46,3 +46,4 @@ echo " Downloading new rpbuild jar from maven repo..."
 wget -4 -q http://repo.matejkormuth.eu/eu/matejkormuth/starving/rpbuild/$DESIRED_VERSION/rpbuild-$DESIRED_VERSION-jar-with-dependencies.jar
 echo " Renaming downloaded artifact to desired name..."
 mv rpbuild-$DESIRED_VERSION-jar-with-dependencies.jar $DESIRED_NAME
+chmod +x $DESIRED_NAME

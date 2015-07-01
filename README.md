@@ -14,6 +14,7 @@ This tool simplifies process of assembling/compressing and distribution of Minec
   - [Xml configuration](#xml-configuration)
 - [Using as Maven plugin](#maven-plugin)
 
+![How is rpbuild used?](http://i.imgur.com/hS5itcg.png)
 
 ![](http://i.imgur.com/vSLchIu.png?1)
 
