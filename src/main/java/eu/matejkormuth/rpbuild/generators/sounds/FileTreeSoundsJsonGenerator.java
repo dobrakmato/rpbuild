@@ -46,6 +46,7 @@ public class FileTreeSoundsJsonGenerator extends Generator implements
 		FileVisitor<Path> {
 
 	private JSONObject root;
+	private Path relativizator;
 
 	private void addSound(String groupKey, String sound) {
 		if (root.has(groupKey)) {
@@ -60,6 +61,8 @@ public class FileTreeSoundsJsonGenerator extends Generator implements
 	@Override
 	public OpenedFile generate() throws BuildError {
 		this.root = new JSONObject();
+		this.relativizator = this.getProject().getSrc()
+				.resolve("assets/minecraft/sounds/");
 
 		// Start walking on root of sounds.
 		try {
@@ -78,13 +81,12 @@ public class FileTreeSoundsJsonGenerator extends Generator implements
 		// Only ogg files.
 		if (attrs.isRegularFile()) {
 			// Add this file.
-			final String fsSeparator = file.getFileSystem().getSeparator();
-			String path = file.toString().replace(".ogg", "")
-					.replace(fsSeparator, "/")
-					.replace("./assets/minecraft/sounds/", "");
-			String key = file.toString().replace(fsSeparator, ".")
-					.replace("..assets.minecraft.sounds.", "")
+			String path = relativizator.relativize(file).toString()
 					.replace(".ogg", "");
+			final String fileSystemSeparator =file.getFileSystem().getSeparator();
+			String key = relativizator.relativize(file).toString()
+					.replace(".ogg", "").replace(fileSystemSeparator, ".");
+
 			if (key.contains("_")) {
 				this.addSound(key.substring(0, key.indexOf("_")), path);
 			} else {
