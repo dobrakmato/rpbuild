@@ -231,6 +231,7 @@ public class Assembler {
                 if (Files.exists(possibleScript)) {
                     break;
                 }
+                possibleScript = null;
             }
             // We have script to run.
             if (possibleScript != null) {
