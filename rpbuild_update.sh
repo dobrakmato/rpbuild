@@ -34,7 +34,7 @@
 # Desired name of rpbuild.jar.
 DESIRED_NAME=rpbuild.jar
 # Desired version of rpbuild that will be downloaded.
-DESIRED_VERSION=1.0.3
+DESIRED_VERSION=1.0.4
 
 # ------ Do not edit below this line! ------
 if [ -f $DESIRED_NAME ];

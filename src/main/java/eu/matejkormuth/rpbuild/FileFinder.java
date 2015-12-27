@@ -44,6 +44,7 @@ import java.util.List;
  */
 public class FileFinder extends SimpleFileVisitor<Path> {
 	private List<Path> paths;
+	private List<Path> directories;
 	private boolean ignoreGit;
 
 	/**
@@ -51,6 +52,7 @@ public class FileFinder extends SimpleFileVisitor<Path> {
 	 */
 	public FileFinder() {
 		this.paths = new ArrayList<Path>();
+		this.directories = new ArrayList<>();
 	}
 
 	/**
@@ -79,6 +81,13 @@ public class FileFinder extends SimpleFileVisitor<Path> {
 		return super.visitFile(file, attrs);
 	}
 
+	@Override
+	public FileVisitResult preVisitDirectory(Path dir, BasicFileAttributes attrs) throws IOException {
+		this.directories.add(dir);
+
+		return super.preVisitDirectory(dir, attrs);
+	}
+
 	/**
 	 * Returns list of all found files as Path list.
 	 * 
@@ -86,6 +95,10 @@ public class FileFinder extends SimpleFileVisitor<Path> {
 	 */
 	public List<Path> getPaths() {
 		return paths;
+	}
+
+	public List<Path> getDirectories() {
+		return directories;
 	}
 
 	/**
