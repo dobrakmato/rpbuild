@@ -61,7 +61,7 @@ public class Bootstrap {
                     runBuild(arguments);
                     break;
                 case "clear-cache":
-                case "cc":
+                case "c":
                     runClearCache();
                     break;
                 case "install":
@@ -92,7 +92,10 @@ public class Bootstrap {
         LinkedList<AbstractTask> tasks = new LinkedList<>();
         tasks.addLast(new UpdateRpBuildTask());
 
-        Application application = new Application(new Options(), tasks);
+        Options options = new Options();
+        options.setAutoUpdate(false);
+
+        Application application = new Application(options, tasks);
         application.run();
     }
 
@@ -100,7 +103,13 @@ public class Bootstrap {
      * Shows help message.
      */
     private static void runHelp() {
-        log.error("Sorry, help is not yet supported!");
+        log.info("rpbuild [command] [arguments]");
+        log.info("Commands: ");
+        log.info(" (b)uild [file] - Builds by the specified file.");
+        log.info(" (c)lear-cache - Clears the local repository.");
+        log.info(" (i)nstall - Installs / reinstalls the the rpbuild CLI.");
+        log.info(" (u)pdate - Performs update of rpbuild CLI if available.");
+        log.info(" (h)elp - Shows help message.");
     }
 
     /**
@@ -114,7 +123,10 @@ public class Bootstrap {
         tasks.addLast(new UpdateRpBuildTask());
         tasks.addLast(new CreateLinksTask());
 
-        Application application = new Application(new Options(), tasks);
+        Options options = new Options();
+        options.setAutoUpdate(false);
+
+        Application application = new Application(options, tasks);
         application.run();
     }
 

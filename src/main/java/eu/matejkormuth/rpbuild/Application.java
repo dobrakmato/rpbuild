@@ -37,6 +37,7 @@ import eu.matejkormuth.rpbuild.plugins.DownscalePlugin;
 import eu.matejkormuth.rpbuild.plugins.JsonMinifyPlugin;
 import eu.matejkormuth.rpbuild.plugins.PackMcMetaPlugin;
 import eu.matejkormuth.rpbuild.tasks.AbstractTask;
+import eu.matejkormuth.rpbuild.tasks.update.UpdateRpBuildTask;
 import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
@@ -96,7 +97,6 @@ public class Application {
 
     private static final String[] MESSAGES = {"Easier Resource Packs!",
             "Building resource packs since 2015!",
-            "Resource Pack automatisation.",
             "New era of resource packs!"};
 
     private SimpleDateFormat timeSpanFormat = new SimpleDateFormat("mm:ss.SSS");
@@ -140,6 +140,14 @@ public class Application {
 
         // Add build steps.
         this.tasks.addAll(tasks);
+
+        // Plan auto update.
+        if (options.isAutoUpdate() && Files.exists(getRpBuildPath())) {
+            new Thread(() -> {
+                log.info("CLI instalation found! Checking for updates...");
+                new UpdateRpBuildTask().run();
+            }, "AutoUpdate").start();
+        }
     }
 
     /**

@@ -130,6 +130,8 @@ public class UpdateRpBuildTask extends AbstractTask {
                     return;
                 }
 
+                log.info("Applying update...");
+
                 // Create and run script.
                 if (System.getProperty("os.name").toLowerCase(Locale.ENGLISH).startsWith("win")) {
                     // Create bat script.

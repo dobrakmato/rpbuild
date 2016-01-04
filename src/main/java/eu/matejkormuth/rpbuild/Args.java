@@ -40,6 +40,26 @@ public class Args {
         this.index = 0;
     }
 
+    public boolean hasFlag(String... flag) {
+        for (String oneFlags : flag) {
+            for (String arg : array) {
+                if (arg.equalsIgnoreCase(oneFlags)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    public String getParam(String name) {
+        for (int i = 0; i < array.length; i++) {
+            if (array[i].equalsIgnoreCase(name)) {
+                return array[i + 1];
+            }
+        }
+        return null;
+    }
+
     /**
      * No more args?
      *
