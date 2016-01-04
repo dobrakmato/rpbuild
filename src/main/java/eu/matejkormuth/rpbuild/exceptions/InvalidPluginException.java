@@ -26,27 +26,28 @@
  *
  * "Minecraft" is a trademark of Mojang AB
  */
-package eu.matejkormuth.rpbuild.api;
+package eu.matejkormuth.rpbuild.exceptions;
 
-import com.typesafe.config.Config;
-import lombok.Data;
+/**
+ * Indicates problem with plugin used in build.
+ */
+public class InvalidPluginException extends TaskException {
+    public InvalidPluginException() {
+    }
 
-import java.nio.charset.Charset;
-import java.nio.file.Path;
+    public InvalidPluginException(String message) {
+        super(message);
+    }
 
-@Data
-public class Project {
+    public InvalidPluginException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-    private String name;
-    private Charset encoding;
-    private Path source;
-    private Path target;
+    public InvalidPluginException(Throwable cause) {
+        super(cause);
+    }
 
-    private Git git;
-    private Compress compress;
-    private RepositoryList repositories;
-
-    private Config properties;
-
-    private BuildSection build;
+    public InvalidPluginException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
 }

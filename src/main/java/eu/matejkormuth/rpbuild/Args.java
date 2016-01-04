@@ -26,27 +26,44 @@
  *
  * "Minecraft" is a trademark of Mojang AB
  */
-package eu.matejkormuth.rpbuild.api;
+package eu.matejkormuth.rpbuild;
 
-import com.typesafe.config.Config;
-import lombok.Data;
+/**
+ * Wraps arguments as object.
+ */
+public class Args {
+    private final String[] array;
+    private int index;
 
-import java.nio.charset.Charset;
-import java.nio.file.Path;
+    public Args(String[] array) {
+        this.array = array;
+        this.index = 0;
+    }
 
-@Data
-public class Project {
+    /**
+     * No more args?
+     *
+     * @return true or false
+     */
+    public boolean empty() {
+        return array.length == index;
+    }
 
-    private String name;
-    private Charset encoding;
-    private Path source;
-    private Path target;
+    /**
+     * Next arg as string.
+     *
+     * @return next arg
+     */
+    public String nextString() {
+        return this.array[index++];
+    }
 
-    private Git git;
-    private Compress compress;
-    private RepositoryList repositories;
-
-    private Config properties;
-
-    private BuildSection build;
+    /**
+     * Next arg as int.
+     *
+     * @return next arg
+     */
+    public int nextInt() {
+        return Integer.valueOf(nextString());
+    }
 }

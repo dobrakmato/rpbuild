@@ -26,27 +26,11 @@
  *
  * "Minecraft" is a trademark of Mojang AB
  */
-package eu.matejkormuth.rpbuild.api;
+package eu.matejkormuth.rpbuild;
 
-import com.typesafe.config.Config;
 import lombok.Data;
 
-import java.nio.charset.Charset;
-import java.nio.file.Path;
-
 @Data
-public class Project {
-
-    private String name;
-    private Charset encoding;
-    private Path source;
-    private Path target;
-
-    private Git git;
-    private Compress compress;
-    private RepositoryList repositories;
-
-    private Config properties;
-
-    private BuildSection build;
+public class Options {
+    private String file = "rpbuild.conf";
 }

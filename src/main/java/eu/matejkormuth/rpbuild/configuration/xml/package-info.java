@@ -1,2 +1,0 @@
-@javax.xml.bind.annotation.adapters.XmlJavaTypeAdapters({ @javax.xml.bind.annotation.adapters.XmlJavaTypeAdapter(type = java.nio.file.Path.class, value = eu.matejkormuth.rpbuild.configuration.xml.XmlPathAdapter.class) })
-package eu.matejkormuth.rpbuild.configuration.xml;

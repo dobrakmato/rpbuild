@@ -28,25 +28,12 @@
  */
 package eu.matejkormuth.rpbuild.api;
 
-import com.typesafe.config.Config;
-import lombok.Data;
-
-import java.nio.charset.Charset;
-import java.nio.file.Path;
-
-@Data
-public class Project {
-
-    private String name;
-    private Charset encoding;
-    private Path source;
-    private Path target;
-
-    private Git git;
-    private Compress compress;
-    private RepositoryList repositories;
-
-    private Config properties;
-
-    private BuildSection build;
+/**
+ * Represents types of compression.
+ */
+public enum CompressionType {
+    /**
+     * Standard ZIP compression.
+     */
+    ZIP
 }

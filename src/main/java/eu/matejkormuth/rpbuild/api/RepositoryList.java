@@ -28,25 +28,11 @@
  */
 package eu.matejkormuth.rpbuild.api;
 
-import com.typesafe.config.Config;
-import lombok.Data;
+import java.util.ArrayList;
 
-import java.nio.charset.Charset;
-import java.nio.file.Path;
-
-@Data
-public class Project {
-
-    private String name;
-    private Charset encoding;
-    private Path source;
-    private Path target;
-
-    private Git git;
-    private Compress compress;
-    private RepositoryList repositories;
-
-    private Config properties;
-
-    private BuildSection build;
+/**
+ * Represents list of repositories. Custom class because we may
+ * want to add more methods in future.
+ */
+public class RepositoryList extends ArrayList<Repository> {
 }

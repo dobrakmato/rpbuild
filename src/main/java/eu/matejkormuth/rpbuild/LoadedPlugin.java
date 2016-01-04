@@ -26,27 +26,55 @@
  *
  * "Minecraft" is a trademark of Mojang AB
  */
-package eu.matejkormuth.rpbuild.api;
+package eu.matejkormuth.rpbuild;
 
-import com.typesafe.config.Config;
+import eu.matejkormuth.rpbuild.api.Plugin;
+import lombok.AllArgsConstructor;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 
-import java.nio.charset.Charset;
-import java.nio.file.Path;
-
+/**
+ * Holds instance of plugin object and it's class loader.
+ */
 @Data
-public class Project {
+@AllArgsConstructor
+@NoArgsConstructor
+public class LoadedPlugin {
 
-    private String name;
-    private Charset encoding;
-    private Path source;
-    private Path target;
+    /**
+     * Class loader that contains this plugin's JAR.
+     */
+    private ClassLoader classLoader;
 
-    private Git git;
-    private Compress compress;
-    private RepositoryList repositories;
+    /**
+     * Instance of this plugin.
+     */
+    private Plugin instance;
 
-    private Config properties;
+    /**
+     * Returns the name of this plugin.
+     *
+     * @return name of this plugin
+     */
+    public String getName() {
+        if (instance == null) {
+            throw new RuntimeException("Plugin is not loaded yet!?");
+        }
 
-    private BuildSection build;
+        return instance.getName();
+    }
+
+    /**
+     * Returns the version of this plugin.
+     *
+     * @return version of this plugin
+     */
+    public String getVersion() {
+        if (instance == null) {
+            throw new RuntimeException("Plugin is not loaded yet!?");
+        }
+
+        return instance.getVersion();
+    }
+
 }

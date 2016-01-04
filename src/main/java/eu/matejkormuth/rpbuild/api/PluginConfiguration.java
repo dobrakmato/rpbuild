@@ -31,22 +31,44 @@ package eu.matejkormuth.rpbuild.api;
 import com.typesafe.config.Config;
 import lombok.Data;
 
-import java.nio.charset.Charset;
-import java.nio.file.Path;
-
+/**
+ * Represents plugin configuration in build configuration file.
+ */
 @Data
-public class Project {
+public class PluginConfiguration {
 
-    private String name;
-    private Charset encoding;
-    private Path source;
-    private Path target;
+    /**
+     * Plugin name as specified in build configuration file.
+     */
+    private String pluginName;
 
-    private Git git;
-    private Compress compress;
-    private RepositoryList repositories;
+    /**
+     * Plugin version as specified in build configuration file.
+     */
+    private String pluginVersion;
 
-    private Config properties;
+    /**
+     * Configuration values from build configuration file.
+     */
+    private Config configuration;
 
-    private BuildSection build;
+    /**
+     * Cached: PluginVersion value object.
+     */
+    private PluginVersion pluginVersionDeclaration;
+
+    /**
+     * Returns PluginVersion value object based on name and version in configuration file.
+     * This object is cached and for all calls will be the same.
+     *
+     * @return plugin version object
+     */
+    public PluginVersion getPluginVersionDeclaration() {
+        // Cache for good.
+        if (pluginVersionDeclaration == null) {
+            return this.pluginVersionDeclaration = new PluginVersion(pluginName, pluginVersion);
+        } else {
+            return pluginVersionDeclaration;
+        }
+    }
 }

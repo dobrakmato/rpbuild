@@ -28,25 +28,22 @@
  */
 package eu.matejkormuth.rpbuild.api;
 
-import com.typesafe.config.Config;
 import lombok.Data;
 
-import java.nio.charset.Charset;
-import java.nio.file.Path;
-
+/**
+ * Specifies resource pack archive compression settings.
+ */
 @Data
-public class Project {
+public class Compress {
 
-    private String name;
-    private Charset encoding;
-    private Path source;
-    private Path target;
+    /**
+     * Type of compression to use. Minecraft currently supports
+     * only ZIP compressed resource packs.
+     */
+    private CompressionType type = CompressionType.ZIP;
 
-    private Git git;
-    private Compress compress;
-    private RepositoryList repositories;
-
-    private Config properties;
-
-    private BuildSection build;
+    /**
+     * Level of compression.
+     */
+    private int level = 9;
 }

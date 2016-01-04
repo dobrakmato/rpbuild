@@ -28,25 +28,32 @@
  */
 package eu.matejkormuth.rpbuild.api;
 
-import com.typesafe.config.Config;
 import lombok.Data;
 
-import java.nio.charset.Charset;
-import java.nio.file.Path;
-
+/**
+ * Settings related to Git integration.
+ */
 @Data
-public class Project {
+public class Git {
 
-    private String name;
-    private Charset encoding;
-    private Path source;
-    private Path target;
+    /**
+     * Url of Git repository.
+     */
+    private String url = null;
 
-    private Git git;
-    private Compress compress;
-    private RepositoryList repositories;
+    /**
+     * Branch to build from.
+     */
+    private String branch = "master";
 
-    private Config properties;
+    /**
+     * Whether to download or not the latest changes.
+     */
+    private boolean pull = false;
 
-    private BuildSection build;
+    /**
+     * Whether to ignore .git folders.
+     */
+    private boolean ignoreGitFolders = true;
+
 }

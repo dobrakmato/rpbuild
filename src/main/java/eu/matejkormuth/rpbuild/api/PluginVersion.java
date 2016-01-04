@@ -28,25 +28,27 @@
  */
 package eu.matejkormuth.rpbuild.api;
 
-import com.typesafe.config.Config;
-import lombok.Data;
+import lombok.Value;
 
-import java.nio.charset.Charset;
-import java.nio.file.Path;
+/**
+ * Value type object which represents snapshot of plugin name (ID) and version.
+ */
+@Value
+public class PluginVersion {
 
-@Data
-public class Project {
+    /**
+     * Represents none or any version. Simply, if user don't care about version
+     * this will be the value of version.
+     */
+    public static final String NONE_VERSION = "none";
 
-    private String name;
-    private Charset encoding;
-    private Path source;
-    private Path target;
+    /**
+     * Name / ID of plugin.
+     */
+    private final String name;
 
-    private Git git;
-    private Compress compress;
-    private RepositoryList repositories;
-
-    private Config properties;
-
-    private BuildSection build;
+    /**
+     * Version of plugin.
+     */
+    private final String version;
 }

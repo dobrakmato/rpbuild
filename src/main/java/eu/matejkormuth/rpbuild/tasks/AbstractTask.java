@@ -26,27 +26,54 @@
  *
  * "Minecraft" is a trademark of Mojang AB
  */
-package eu.matejkormuth.rpbuild.api;
+package eu.matejkormuth.rpbuild.tasks;
 
-import com.typesafe.config.Config;
-import lombok.Data;
+import eu.matejkormuth.rpbuild.UnsafeUtils;
 
-import java.nio.charset.Charset;
-import java.nio.file.Path;
+import java.util.HashMap;
+import java.util.Map;
 
-@Data
-public class Project {
+/**
+ * Represents abstract task, that can be run.
+ */
+public abstract class AbstractTask {
 
-    private String name;
-    private Charset encoding;
-    private Path source;
-    private Path target;
+    /**
+     * Provides way to communicate between tasks.
+     */
+    private static Map<String, Object> outputs = new HashMap<>();
 
-    private Git git;
-    private Compress compress;
-    private RepositoryList repositories;
+    /**
+     * Sets value of output (export) by key. Other tasks can access it.
+     *
+     * @param key    key of output
+     * @param object value of output
+     */
+    protected static void setOutput(String key, Object object) {
+        outputs.put(key, object);
+    }
 
-    private Config properties;
+    /**
+     * Returns output (export) set by any task.
+     *
+     * @param key key of output
+     * @param <T> type of output
+     * @return output or null, if not found
+     */
+    protected static <T> T getOutput(String key) {
+        return UnsafeUtils.cast(outputs.get(key));
+    }
 
-    private BuildSection build;
+    /**
+     * Removes all outputs and discards internal storage.
+     */
+    public static void clearOutputs() {
+        outputs.clear();
+        outputs = null;
+    }
+
+    /**
+     * Runs this task.
+     */
+    public abstract void run();
 }

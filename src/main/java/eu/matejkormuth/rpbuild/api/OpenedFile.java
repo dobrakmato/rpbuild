@@ -28,25 +28,54 @@
  */
 package eu.matejkormuth.rpbuild.api;
 
-import com.typesafe.config.Config;
-import lombok.Data;
+import lombok.EqualsAndHashCode;
+import lombok.Getter;
+import lombok.Setter;
+import lombok.ToString;
 
-import java.nio.charset.Charset;
 import java.nio.file.Path;
 
-@Data
-public class Project {
+/**
+ * Represents file with content loaded in memory.
+ */
+@EqualsAndHashCode
+@ToString
+public class OpenedFile {
 
+    /**
+     * Absolute path to file on disk (may not exists).
+     */
+    @Getter
+    @Setter
+    private Path absolutePath;
+
+    /**
+     * Name of file.
+     */
+    @Getter
+    @Setter
     private String name;
-    private Charset encoding;
-    private Path source;
-    private Path target;
 
-    private Git git;
-    private Compress compress;
-    private RepositoryList repositories;
+    /**
+     * Contents of file.
+     */
+    @Getter
+    @Setter
+    private byte[] data;
 
-    private Config properties;
+    /**
+     * Name or relative path of this file.
+     *
+     * @param name name of file
+     */
+    public OpenedFile(String name) {
+        this.name = name;
+    }
 
-    private BuildSection build;
+    public OpenedFile(Path absolutePath, byte[] data) {
+        this.absolutePath = absolutePath;
+        this.data = data;
+        this.name = absolutePath.getFileName().toString();
+    }
+
 }

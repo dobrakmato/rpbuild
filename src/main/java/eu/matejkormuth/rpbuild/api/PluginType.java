@@ -28,25 +28,24 @@
  */
 package eu.matejkormuth.rpbuild.api;
 
-import com.typesafe.config.Config;
-import lombok.Data;
+/**
+ * Type of plugin specifies when and how the plugin should run.
+ */
+public enum PluginType {
+    /**
+     * Generates file(s) without the list of files in directory.
+     */
+    GENERATE_BEFORE_LIST,
 
-import java.nio.charset.Charset;
-import java.nio.file.Path;
+    /**
+     * Generates file(s) using all found files in directory
+     * and / or subdirectories.
+     */
+    GENERATE_AFTER_LIST,
 
-@Data
-public class Project {
-
-    private String name;
-    private Charset encoding;
-    private Path source;
-    private Path target;
-
-    private Git git;
-    private Compress compress;
-    private RepositoryList repositories;
-
-    private Config properties;
-
-    private BuildSection build;
+    /**
+     * Transforms the content of each file. No new file(s) are
+     * created, neither names are changed.
+     */
+    TRANSFORM_FILES
 }

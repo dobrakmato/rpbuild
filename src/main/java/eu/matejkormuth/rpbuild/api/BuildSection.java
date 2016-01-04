@@ -28,25 +28,55 @@
  */
 package eu.matejkormuth.rpbuild.api;
 
-import com.typesafe.config.Config;
+import eu.matejkormuth.rpbuild.Application;
 import lombok.Data;
 
-import java.nio.charset.Charset;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
+import java.util.List;
 
+/**
+ * Represents build section (folder select).
+ */
 @Data
-public class Project {
+public class BuildSection {
 
+    /**
+     * Name of folder or path (separated by dots).
+     */
     private String name;
-    private Charset encoding;
-    private Path source;
-    private Path target;
 
-    private Git git;
-    private Compress compress;
-    private RepositoryList repositories;
+    /**
+     * Parent build section. For top level build section, this is null.
+     */
+    private BuildSection parent;
 
-    private Config properties;
+    /**
+     * File exclude rules.
+     */
+    private List<PathMatcher> exclude;
 
-    private BuildSection build;
+    /**
+     * Plugins that should run on files in this section.
+     */
+    private List<PluginConfiguration> plugins;
+
+    /**
+     * Children sections (sub-directory selects).
+     */
+    private List<BuildSection> children;
+
+    /**
+     * Returns absolute path to this build section on disk drive.
+     *
+     * @return absolute path
+     */
+    public Path getAbsolutePath() {
+        if (this.parent == null) {
+            return Application.resolve(Project.class).getSource();
+        } else {
+            return this.parent.getAbsolutePath().resolve(name.replace('.', '/'));
+        }
+    }
+
 }

@@ -1,6 +1,6 @@
 /**
- * Minecraft resource pack compiler and assembler - rpBuild - Build system for Minecraft resource packs.
- * Copyright (c) 2015, Matej Kormuth <http://www.github.com/dobrakmato>
+ * rpBuild 2 - Improved build system for Minecraft resource packs.
+ * Copyright (c) 2015 - 2016, Matej Kormuth <http://www.github.com/dobrakmato>
  * All rights reserved.
  *
  * Redistribution and use in source and binary forms, with or without modification,
@@ -28,158 +28,129 @@
  */
 package eu.matejkormuth.rpbuild;
 
-import java.io.File;
-import java.io.FileWriter;
-import java.io.IOException;
+import eu.matejkormuth.rpbuild.tasks.AbstractTask;
+import eu.matejkormuth.rpbuild.tasks.ClearCacheTask;
+import eu.matejkormuth.rpbuild.tasks.build.*;
+import eu.matejkormuth.rpbuild.tasks.install.CreateLinksTask;
+import eu.matejkormuth.rpbuild.tasks.install.InstallCLITask;
+import eu.matejkormuth.rpbuild.tasks.update.UpdateRpBuildTask;
+import lombok.extern.slf4j.Slf4j;
 
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-
-import eu.matejkormuth.rpbuild.api.BuildStep;
-import eu.matejkormuth.rpbuild.api.Project;
-import eu.matejkormuth.rpbuild.compilers.JsonCompressor;
-import eu.matejkormuth.rpbuild.configuration.xml.XmlBuildStepCompile;
-import eu.matejkormuth.rpbuild.configuration.xml.XmlBuildStepGenerate;
-import eu.matejkormuth.rpbuild.configuration.xml.XmlProject;
-import eu.matejkormuth.rpbuild.configuration.xml.XmlSetting;
-import eu.matejkormuth.rpbuild.generators.PackMcmetaGenerator;
-import eu.matejkormuth.rpbuild.generators.sounds.FileTreeSoundsJsonGenerator;
+import java.util.LinkedList;
 
 /**
- * Represents class with application entry point that handles startup logic of
- * application.
+ * Entry point class.
  */
+@Slf4j
 public class Bootstrap {
-	public static void main(String[] args) {
-		printInfo();
-		// In case our client know how to use application.
-		if (args.length == 1) {
-			if (args[0].equalsIgnoreCase("create")) {
-				createDefault();
-			} else {
-				runAssembler(args[0]);
-			}
-		} else {
-			// Let's find file for him!
-			findDescriptor();
-		}
-	}
+    /**
+     * Entry point.
+     *
+     * @param args arguments
+     */
+    public static void main(String[] args) {
+        Args arguments = new Args(args);
 
-	private static void createDefault() {
-		System.out.println("Creating default configuration file rpbuild.xml...");
-		try {
-			Marshaller m = JAXBContext.newInstance(XmlProject.class,
-					XmlBuildStepCompile.class, XmlBuildStepGenerate.class,
-					XmlSetting.class).createMarshaller();
-			m.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
-			XmlProject proj = new XmlProject();
+        if (arguments.empty()) {
+            runBuild(arguments);
+        } else {
+            String command = arguments.nextString();
+            switch (command) {
+                case "build":
+                case "b":
+                    runBuild(arguments);
+                    break;
+                case "clear-cache":
+                case "cc":
+                    runClearCache();
+                    break;
+                case "install":
+                case "i":
+                    runInstall();
+                    break;
+                case "update":
+                case "u":
+                    runUpdate(arguments);
+                    break;
+                case "help":
+                case "h":
+                default:
+                    runHelp();
+                    break;
+            }
+        }
+    }
 
-			// Search for .git folder and automatically set up git pull.
-			if (new File("./.git/").exists()) {
+    /**
+     * Updates rpbuild CLI.
+     *
+     * @param args arguments
+     */
+    private static void runUpdate(Args args) {
+        log.info("Updating rpBuild CLI...");
 
-				System.out.println("Git folder found in current directory!\n");
+        LinkedList<AbstractTask> tasks = new LinkedList<>();
+        tasks.addLast(new UpdateRpBuildTask());
 
-				System.out.println("        --------------------------------------------");
-				System.out.println("        |         WARNING! READ CAREFULLY!         |");
-				System.out.println("        |------------------------------------------|");
-				System.out.println("        | When git pull is enabled, rpbuild destr- |");
-				System.out.println("        | oys all local changes! If you do not wa- |");
-				System.out.println("        | nt that, please disable gitPull in your  |");
-				System.out.println("        | rpbuild.xml!                             |");
-				System.out.println("        --------------------------------------------");
+        Application application = new Application(new Options(), tasks);
+        application.run();
+    }
 
-				System.out.println("\nAutomatically setting up git pull for this rpbuild.xml!");
+    /**
+     * Shows help message.
+     */
+    private static void runHelp() {
+        log.error("Sorry, help is not yet supported!");
+    }
 
-				proj.setGitPull(true);
-			}
+    /**
+     * Installs rpbuild as CLI.
+     */
+    private static void runInstall() {
+        log.info("Installing rpbuild as CLI...");
 
-			// Add deafult build steps.
-			BuildStep[] build = new BuildStep[] {
-					new XmlBuildStepGenerate(PackMcmetaGenerator.class),
-					new XmlBuildStepGenerate(FileTreeSoundsJsonGenerator.class),
-					new XmlBuildStepCompile(JsonCompressor.class, ".json") };
+        LinkedList<AbstractTask> tasks = new LinkedList<>();
+        tasks.addLast(new InstallCLITask());
+        tasks.addLast(new UpdateRpBuildTask());
+        tasks.addLast(new CreateLinksTask());
 
-			proj.setBuild(build);
-			m.marshal(proj, new FileWriter(new File("rpbuild.xml")));
-			System.out.println("File rpbuild.xml has been created!");
-		} catch (JAXBException | IOException e) {
-			e.printStackTrace();
-		}
-	}
+        Application application = new Application(new Options(), tasks);
+        application.run();
+    }
 
-	private static void findDescriptor() {
-		String descriptorFile = null;
-		int matchesFound = 0;
-		for (String fileName : new File(".").list()) {
-			if (fileName.equalsIgnoreCase("rpbuild.xml")) {
-				descriptorFile = fileName;
-				matchesFound++;
-			} else if (fileName.equalsIgnoreCase("rpbuild.properties")) {
-				descriptorFile = fileName;
-				matchesFound++;
-			} else if (fileName.endsWith(".rpbuild")) {
-				descriptorFile = fileName;
-				matchesFound++;
-			}
-		}
+    /**
+     * Clears the cache.
+     */
+    private static void runClearCache() {
+        LinkedList<AbstractTask> tasks = new LinkedList<>();
+        tasks.addLast(new ClearCacheTask());
 
-		if (descriptorFile != null) {
-			if (matchesFound == 1) {
-				System.out.println("Build descriptor not explicitly specified. Using file '"
-								+ descriptorFile
-								+ "' as build descriptor for this build.");
-				runAssembler(descriptorFile);
-			} else {
-				System.out.println("More then one file matches conditions to be a "
-								+ "build file in working directory. Please specify build descriptor explicitly!");
-				printUsage();
-				System.exit(1);
-			}
-		} else {
-			System.out.println("No valid valid build descriptor was found in working directory. Please specify it!");
-			printUsage();
-			System.exit(1);
-		}
-	}
+        Application application = new Application(new Options(), tasks);
+        application.run();
+    }
 
-	/**
-	 * Starts build process with specified file as build descriptor.
-	 * 
-	 * @param file
-	 *            build descriptor
-	 */
-	private static void runAssembler(String file) {
-		if (file.endsWith(".xml")) {
-			try {
-				JAXBContext context = JAXBContext.newInstance(XmlProject.class,
-						XmlBuildStepCompile.class, XmlBuildStepGenerate.class);
-				Object projectObj = context.createUnmarshaller().unmarshal(
-						new File(file));
-				Project options = (Project) projectObj;
-				new Assembler(options).build();
-			} catch (Exception e) {
-				System.out.println("Can't initialize");
-				e.printStackTrace();
-			}
-		} else {
-			System.out.println("Sorry, rpbuild does not support legacy build desccriptors anymore!");
-			System.out.println("You should convert your build descriptor to new xml format "
-							+ "which provides more options and more control over your build.");
-			System.out.println("For more information please visit github page: https://github.com/dobrakmato/rpbuild#xml-configuration");
-		}
-	}
+    /**
+     * Runs a build with rpbuild.
+     *
+     * @param args arguments
+     */
+    private static void runBuild(Args args) {
+        String fileName = "rpbuild.conf";
+        if (!args.empty()) {
+            fileName = args.nextString();
+        }
 
-	/**
-	 * Prints help message to console.
-	 */
-	private static void printUsage() {
-		System.out.println("Usage: rpbuild.jar <buildFile>");
-	}
-	
-	private static void printInfo() {
-		System.out.println("rpbuild.jar - " + Bootstrap.class.getPackage().getImplementationVersion());
-		System.out.println("If you run into troubles: https://github.com/dobrakmato/rpbuild/issues");
-		System.out.println();
-	}
+        Options options = new Options();
+        options.setFile(fileName);
+
+        LinkedList<AbstractTask> tasks = new LinkedList<>();
+        tasks.addLast(new LoadConfigurationTask());
+        tasks.addLast(new CollectPluginsTask());
+        tasks.addLast(new GitPullTask());
+        tasks.addLast(new MoveToTempDirectoryTask());
+        tasks.addLast(new CompileAndGenerateTask());
+
+        Application application = new Application(options, tasks);
+        application.run();
+    }
 }

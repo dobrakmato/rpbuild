@@ -26,27 +26,51 @@
  *
  * "Minecraft" is a trademark of Mojang AB
  */
-package eu.matejkormuth.rpbuild.api;
+package eu.matejkormuth.rpbuild.plugins;
 
 import com.typesafe.config.Config;
-import lombok.Data;
+import eu.matejkormuth.rpbuild.Application;
+import eu.matejkormuth.rpbuild.api.OpenedFile;
+import eu.matejkormuth.rpbuild.api.Plugin;
+import eu.matejkormuth.rpbuild.api.PluginType;
+import eu.matejkormuth.rpbuild.api.Project;
 
-import java.nio.charset.Charset;
-import java.nio.file.Path;
+public class JsonMinifyPlugin extends Plugin {
 
-@Data
-public class Project {
+    private static final String NAME = "rpbuild-jsonminify-plugin";
+    private static final String VERSION = "1.0";
+    private static final String AUTHOR = "Matej Kormuth";
 
-    private String name;
-    private Charset encoding;
-    private Path source;
-    private Path target;
+    @Override
+    public String getName() {
+        return NAME;
+    }
 
-    private Git git;
-    private Compress compress;
-    private RepositoryList repositories;
+    @Override
+    public String getVersion() {
+        return VERSION;
+    }
 
-    private Config properties;
+    @Override
+    public String getAuthor() {
+        return AUTHOR;
+    }
 
-    private BuildSection build;
+    @Override
+    public String getGlobPattern() {
+        return "**.json";
+    }
+
+    @Override
+    public PluginType getType() {
+        return PluginType.TRANSFORM_FILES;
+    }
+
+    @Override
+    public void transform(Config config, OpenedFile file) {
+        Project project = Application.resolve(Project.class);
+
+        file.setData(new String(file.getData(), project.getEncoding())
+                .replaceAll("\\s+", "").getBytes(project.getEncoding()));
+    }
 }

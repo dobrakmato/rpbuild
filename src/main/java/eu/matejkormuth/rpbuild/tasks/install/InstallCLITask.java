@@ -26,27 +26,35 @@
  *
  * "Minecraft" is a trademark of Mojang AB
  */
-package eu.matejkormuth.rpbuild.api;
+package eu.matejkormuth.rpbuild.tasks.install;
 
-import com.typesafe.config.Config;
-import lombok.Data;
+import eu.matejkormuth.rpbuild.Application;
+import eu.matejkormuth.rpbuild.exceptions.TaskException;
+import eu.matejkormuth.rpbuild.tasks.AbstractTask;
+import lombok.extern.slf4j.Slf4j;
 
-import java.nio.charset.Charset;
-import java.nio.file.Path;
+import java.io.IOException;
 
-@Data
-public class Project {
+/**
+ * Setups rpbuild for CLI integration.
+ */
+@Slf4j
+public class InstallCLITask extends AbstractTask {
+    @Override
+    public void run() {
+        Application application = Application.resolve(Application.class);
+        log.info("Creating files...");
 
-    private String name;
-    private Charset encoding;
-    private Path source;
-    private Path target;
+        try {
+            application.getRpBuildPath().toFile().createNewFile();
+            application.getRpBuildGuiPath().toFile().createNewFile();
+        } catch (IOException e) {
+            log.error("Can't create files!", e);
+            throw new TaskException("Can't create needed files!", e);
+        }
+        log.info("Files created!");
 
-    private Git git;
-    private Compress compress;
-    private RepositoryList repositories;
-
-    private Config properties;
-
-    private BuildSection build;
+        // Force update.
+        AbstractTask.setOutput("forceUpdate", true);
+    }
 }

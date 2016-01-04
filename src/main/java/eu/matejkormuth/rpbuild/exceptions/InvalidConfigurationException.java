@@ -26,27 +26,28 @@
  *
  * "Minecraft" is a trademark of Mojang AB
  */
-package eu.matejkormuth.rpbuild.api;
+package eu.matejkormuth.rpbuild.exceptions;
 
-import com.typesafe.config.Config;
-import lombok.Data;
+/**
+ * Indicates problem with build configuration file.
+ */
+public class InvalidConfigurationException extends TaskException {
+    public InvalidConfigurationException() {
+    }
 
-import java.nio.charset.Charset;
-import java.nio.file.Path;
+    public InvalidConfigurationException(String message) {
+        super(message);
+    }
 
-@Data
-public class Project {
+    public InvalidConfigurationException(String message, Throwable cause) {
+        super(message, cause);
+    }
 
-    private String name;
-    private Charset encoding;
-    private Path source;
-    private Path target;
+    public InvalidConfigurationException(Throwable cause) {
+        super(cause);
+    }
 
-    private Git git;
-    private Compress compress;
-    private RepositoryList repositories;
-
-    private Config properties;
-
-    private BuildSection build;
+    public InvalidConfigurationException(String message, Throwable cause, boolean enableSuppression, boolean writableStackTrace) {
+        super(message, cause, enableSuppression, writableStackTrace);
+    }
 }

@@ -26,27 +26,29 @@
  *
  * "Minecraft" is a trademark of Mojang AB
  */
-package eu.matejkormuth.rpbuild.api;
+package eu.matejkormuth.rpbuild;
 
-import com.typesafe.config.Config;
-import lombok.Data;
+import lombok.experimental.UtilityClass;
 
-import java.nio.charset.Charset;
-import java.nio.file.Path;
+/**
+ * Utility class to help get @SuppressWarnings away from main code.
+ */
+@UtilityClass
+public class UnsafeUtils {
 
-@Data
-public class Project {
+    /**
+     * Casts specified object to another type.
+     *
+     * @param o   object
+     * @param <T> type
+     * @return cast object
+     */
+    @SuppressWarnings("unchecked")
+    public static <T> T cast(Object o) {
+        if (o == null) {
+            return null;
+        }
 
-    private String name;
-    private Charset encoding;
-    private Path source;
-    private Path target;
-
-    private Git git;
-    private Compress compress;
-    private RepositoryList repositories;
-
-    private Config properties;
-
-    private BuildSection build;
+        return (T) o;
+    }
 }

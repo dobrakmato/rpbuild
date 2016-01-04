@@ -26,27 +26,36 @@
  *
  * "Minecraft" is a trademark of Mojang AB
  */
-package eu.matejkormuth.rpbuild.api;
+package eu.matejkormuth.rpbuild.tasks;
 
-import com.typesafe.config.Config;
-import lombok.Data;
+import eu.matejkormuth.rpbuild.Application;
+import eu.matejkormuth.rpbuild.LocalRepository;
+import eu.matejkormuth.rpbuild.exceptions.TaskException;
+import eu.matejkormuth.rpbuild.nio.DeleteFileVisitor;
+import lombok.extern.slf4j.Slf4j;
 
-import java.nio.charset.Charset;
-import java.nio.file.Path;
+import java.io.IOException;
+import java.nio.file.Files;
 
-@Data
-public class Project {
+/**
+ * Removes local cache (local repository).
+ */
+@Slf4j
+public class ClearCacheTask extends AbstractTask {
 
-    private String name;
-    private Charset encoding;
-    private Path source;
-    private Path target;
+    @Override
+    public void run() {
+        Application application = Application.resolve(Application.class);
 
-    private Git git;
-    private Compress compress;
-    private RepositoryList repositories;
+        LocalRepository localRepository = (LocalRepository) application.getLocalRepository();
+        log.info("Clearing local repository...");
+        try {
+            Files.walkFileTree(localRepository.getRoot(), new DeleteFileVisitor());
+        } catch (IOException e) {
+            log.error("Can't clear local repository!", e);
+            throw new TaskException(e);
+        }
+        log.info("Local repository cleared!");
+    }
 
-    private Config properties;
-
-    private BuildSection build;
 }
