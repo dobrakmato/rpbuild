@@ -35,6 +35,7 @@ import eu.matejkormuth.rpbuild.api.Repository;
 import eu.matejkormuth.rpbuild.exceptions.TaskException;
 import eu.matejkormuth.rpbuild.plugins.DownscalePlugin;
 import eu.matejkormuth.rpbuild.plugins.JsonMinifyPlugin;
+import eu.matejkormuth.rpbuild.plugins.OptipngPlugin;
 import eu.matejkormuth.rpbuild.plugins.PackMcMetaPlugin;
 import eu.matejkormuth.rpbuild.tasks.AbstractTask;
 import eu.matejkormuth.rpbuild.tasks.update.UpdateRpBuildTask;
@@ -176,6 +177,8 @@ public class Application {
         addPlugin(new LoadedPlugin(getClass().getClassLoader(), new DownscalePlugin()));
         addPlugin(new LoadedPlugin(getClass().getClassLoader(), new JsonMinifyPlugin()));
         addPlugin(new LoadedPlugin(getClass().getClassLoader(), new PackMcMetaPlugin()));
+
+        addPlugin(new LoadedPlugin(getClass().getClassLoader(), new OptipngPlugin()));
 
         log.info("There are {} bundled plugins in this version of rpbuild.", this.plugins.size());
     }
