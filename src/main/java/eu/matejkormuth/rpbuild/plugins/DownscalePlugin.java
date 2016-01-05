@@ -43,6 +43,9 @@ import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 
+/**
+ * Provides basic downscaling.
+ */
 public class DownscalePlugin extends Plugin {
 
     private static final String NAME = "rpbuild-downscale-plugin";

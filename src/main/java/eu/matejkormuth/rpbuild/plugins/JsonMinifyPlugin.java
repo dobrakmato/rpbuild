@@ -35,6 +35,9 @@ import eu.matejkormuth.rpbuild.api.Plugin;
 import eu.matejkormuth.rpbuild.api.PluginType;
 import eu.matejkormuth.rpbuild.api.Project;
 
+/**
+ * Minifies json files by removing whitespace.
+ */
 public class JsonMinifyPlugin extends Plugin {
 
     private static final String NAME = "rpbuild-jsonminify-plugin";
