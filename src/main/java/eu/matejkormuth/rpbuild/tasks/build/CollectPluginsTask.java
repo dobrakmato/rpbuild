@@ -29,10 +29,7 @@
 package eu.matejkormuth.rpbuild.tasks.build;
 
 import eu.matejkormuth.rpbuild.Application;
-import eu.matejkormuth.rpbuild.api.BuildSection;
-import eu.matejkormuth.rpbuild.api.PluginVersion;
-import eu.matejkormuth.rpbuild.api.Project;
-import eu.matejkormuth.rpbuild.api.Repository;
+import eu.matejkormuth.rpbuild.api.*;
 import eu.matejkormuth.rpbuild.exceptions.TaskException;
 import eu.matejkormuth.rpbuild.tasks.AbstractTask;
 import lombok.extern.slf4j.Slf4j;
@@ -40,7 +37,6 @@ import lombok.extern.slf4j.Slf4j;
 import java.nio.file.attribute.FileTime;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.stream.Collectors;
 
 /**
  * Collects plugin declaration from build configuration and then collects
@@ -59,11 +55,14 @@ public class CollectPluginsTask extends AbstractTask {
         Set<PluginVersion> plugins = new HashSet<>();
         collectTo(project.getBuild(), plugins);
 
+        log.info("We will need {} different plugins for this build.", plugins.size());
+
         // Collect versions from repositories.
         for (PluginVersion pluginVersion : plugins) {
 
             // Check if it's not bundled.
             if (application.hasPlugin(pluginVersion)) {
+                log.info("Plugin {} is bundled.", pluginVersion.getName());
                 // Do nothing at all. lol.
                 continue;
             }
@@ -81,6 +80,7 @@ public class CollectPluginsTask extends AbstractTask {
                 }
 
                 localRepository.load(pluginVersion);
+                log.info("Plugin {} was loaded from local repo.", pluginVersion.getName());
                 continue;
             }
 
@@ -149,11 +149,9 @@ public class CollectPluginsTask extends AbstractTask {
      */
     private void collectTo(BuildSection section, Set<PluginVersion> to) {
         // Collect plugins from current section.
-        to.addAll(section
-                .getPlugins()
-                .stream()
-                .map(pc -> new PluginVersion(pc.getPluginName(), pc.getPluginVersion()))
-                .collect(Collectors.toList()));
+        for (PluginConfiguration configuration : section.getPlugins()) {
+            to.add(new PluginVersion(configuration.getPluginName(), configuration.getPluginVersion()));
+        }
 
         // Collect from all subsections.
         for (BuildSection section1 : section.getChildren()) {

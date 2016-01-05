@@ -53,6 +53,10 @@ public class ListFileExcludesVisitor extends SimpleFileVisitor<Path> {
     private final List<PathMatcher> excludeFilters;
 
     public ListFileExcludesVisitor(List<PathMatcher> excludeFilters) {
+        if (excludeFilters == null) {
+            throw new NullPointerException("excludeFilters can't be null!");
+        }
+
         this.excludeFilters = excludeFilters;
     }
 

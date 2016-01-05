@@ -32,8 +32,8 @@ import com.typesafe.config.Config;
 import eu.matejkormuth.rpbuild.api.OpenedFile;
 import eu.matejkormuth.rpbuild.api.Plugin;
 import eu.matejkormuth.rpbuild.api.PluginType;
-import eu.matejkormuth.rpbuild.exceptions.TaskException;
 import eu.matejkormuth.rpbuild.exceptions.InvalidConfigurationException;
+import eu.matejkormuth.rpbuild.exceptions.TaskException;
 
 import javax.imageio.ImageIO;
 import java.awt.geom.AffineTransform;
@@ -70,6 +70,11 @@ public class DownscalePlugin extends Plugin {
     @Override
     public String getAuthor() {
         return AUTHOR;
+    }
+
+    @Override
+    public String getGlobPattern() {
+        return "**.{png,jpg}";
     }
 
     @Override
@@ -113,6 +118,9 @@ public class DownscalePlugin extends Plugin {
                 baos.flush();
                 file.setData(baos.toByteArray());
                 baos.close();
+
+                scaledImg = null;
+                srcImg = null;
 
             }
         } catch (IOException e) {

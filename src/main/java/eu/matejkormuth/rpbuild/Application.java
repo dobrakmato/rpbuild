@@ -43,11 +43,14 @@ import lombok.Getter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.net.URL;
+import java.net.URLClassLoader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
 import java.util.*;
+import java.util.jar.Manifest;
 
 /**
  * Represents main rpbuild application.
@@ -126,6 +129,7 @@ public class Application {
 
     public Application(Options options, LinkedList<AbstractTask> tasks) {
         store(Application.class, this);
+        store(Options.class, options);
 
         // Print short application intro.
         printIntro();
@@ -161,13 +165,46 @@ public class Application {
         String rawVersion = Bootstrap.class.getPackage().getImplementationVersion();
         String version = rawVersion == null ? "null (custom build?)" : rawVersion;
 
-        log.info("Version: {}", version);
+        String describe = "unknown";
+        String date = "unknown";
+
+        try {
+            URL url = ((URLClassLoader) getClass().getClassLoader()).findResource("META-INF/MANIFEST.MF");
+            Manifest manifest = new Manifest(url.openStream());
+
+            if (manifest.getMainAttributes().getValue("BuildDate") != null) {
+                date = manifest.getMainAttributes().getValue("BuildDate");
+            }
+
+            if (manifest.getMainAttributes().getValue("BuildGitDescribe") != null) {
+                describe = manifest.getMainAttributes().getValue("BuildGitDescribe");
+            }
+        } catch (Exception e) {
+            // Be silent.
+        }
+
+        log.info("Version: {} ({}) built on {}", version, describe, date);
         log.info("If you run into troubles: https://github.com/dobrakmato/rpbuild/issues");
         printLine();
     }
 
+    private static String line = "---------------------------------------------------";
+
     private void printLine() {
-        log.info("---------------------------------------------------");
+        log.info(line);
+    }
+
+    private void printLineStrCentered(String str) {
+        if (str.length() > line.length()) {
+            throw new IllegalArgumentException("Too long string.");
+        }
+
+        int strLen = str.length();
+        int lLen = line.length();
+        int diff = lLen - strLen;
+        int index = diff < 0 ? 0 : diff / 2;
+
+        log.info(line.substring(0, index) + str + line.substring(0, index));
     }
 
     /**
@@ -246,8 +283,7 @@ public class Application {
         long startTime = System.currentTimeMillis();
 
         for (AbstractTask task : tasks) {
-            printLine();
-            log.info("TASK: {}...", task.getClass().getSimpleName());
+            printLineStrCentered(task.getClass().getSimpleName());
             try {
                 task.run();
             } catch (TaskException e) {

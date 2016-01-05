@@ -30,6 +30,8 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <maven.build.timestamp.format>yyyy-MM-dd HH:mm:ss</maven.build.timestamp.format>
+        <describe>unknown</describe>
     </properties>
 
     <dependencies>
@@ -65,6 +67,23 @@
 
     <build>
         <plugins>
+            <plugin>
+                <groupId>com.lukegb.mojo</groupId>
+                <artifactId>gitdescribe-maven-plugin</artifactId>
+                <version>3.0</version>
+                <executions>
+                    <execution>
+                        <goals>
+                            <goal>gitdescribe</goal>
+                        </goals>
+                        <id>git-describe</id>
+                        <phase>initialize</phase>
+                        <configuration>
+                            <!-- configuration properties go here. -->
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
             <!-- Main class and manifest. -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -76,6 +95,10 @@
                             <mainClass>eu.matejkormuth.rpbuild.Bootstrap</mainClass>
                             <addDefaultImplementationEntries>true</addDefaultImplementationEntries>
                         </manifest>
+                        <manifestEntries>
+                            <BuildGitDescribe>${describe}</BuildGitDescribe>
+                            <BuildDate>${maven.build.timestamp}</BuildDate>
+                        </manifestEntries>
                     </archive>
                 </configuration>
             </plugin>

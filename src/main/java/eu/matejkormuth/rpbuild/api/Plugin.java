@@ -29,6 +29,8 @@
 package eu.matejkormuth.rpbuild.api;
 
 import com.typesafe.config.Config;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.nio.file.Path;
 import java.util.List;
@@ -76,12 +78,39 @@ public abstract class Plugin {
     }
 
     /**
+     * Whether this plugin was or wasn't initialized.
+     */
+    @Getter
+    @Setter
+    private boolean initialized = false;
+
+    /**
+     * Represents number of exceptions this plugin has generated.
+     */
+    @Getter
+    private int exceptionCount = 0;
+
+    /**
+     * Increments exception count for this plugin by one.
+     */
+    public void incrementExceptionCount() {
+        exceptionCount++;
+    }
+
+    /**
+     * Called before the plugin is used for the first time.
+     */
+    public void initialize() {
+    }
+
+    /**
      * Override in GENERATE_BEFORE_LIST plugins.
      *
      * @param config configuration values fro build configuration
      * @return list of generated files
+     * @throws Exception when exception occurs
      */
-    public List<OpenedFile> generate(Config config) {
+    public List<OpenedFile> generate(Config config) throws Exception {
         throw new UnsupportedOperationException("Not yet implemented!");
     }
 
@@ -91,8 +120,9 @@ public abstract class Plugin {
      * @param config configuration values fro build configuration
      * @param files  list of all files in current directory and all subdirectories
      * @return list of generated files
+     * @throws Exception when exception occurs
      */
-    public List<OpenedFile> generate(Config config, List<Path> files) {
+    public List<OpenedFile> generate(Config config, List<Path> files) throws Exception {
         throw new UnsupportedOperationException("Not yet implemented!");
     }
 
@@ -101,8 +131,9 @@ public abstract class Plugin {
      *
      * @param config configuration values fro build configuration
      * @param file   list of all files as OpenedFile-s in current directory and all subdirectories
+     * @throws Exception when exception occurs
      */
-    public void transform(Config config, OpenedFile file) {
+    public void transform(Config config, OpenedFile file) throws Exception {
         throw new UnsupportedOperationException("Not yet implemented!");
     }
 }

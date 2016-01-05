@@ -37,6 +37,7 @@ import eu.matejkormuth.rpbuild.exceptions.InvalidConfigurationException;
 import eu.matejkormuth.rpbuild.tasks.AbstractTask;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.File;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.nio.charset.Charset;
@@ -64,7 +65,8 @@ public class LoadConfigurationTask extends AbstractTask {
         }
 
         // Load and parse configuration.
-        Config config = ConfigFactory.load(application.getOptions().getFile());
+        Config config = ConfigFactory.parseFile(new File(application.getOptions().getFile())).resolve();
+
         Project project = new Project();
 
         log.info("Loading build descriptor...");
@@ -72,10 +74,12 @@ public class LoadConfigurationTask extends AbstractTask {
         // Load config values.
         loadProjectTo(config, project);
 
-        log.info("Project Name: {}", project.getName());
-        log.info("Encoding: {}", project.getEncoding().displayName());
-        log.info("Project source: {}", project.getSource());
-        log.info("Project target: {}", project.getTarget());
+        log.info("############ CURRENTLY BUILDING ################");
+        log.info("# Project Name: {}", project.getName());
+        log.info("# Encoding: {}", project.getEncoding().displayName());
+        log.info("# Project source: {}", project.getSource());
+        log.info("# Project target: {}", project.getTarget());
+        log.info("################################################");
 
         // Store project in application container.
         Application.store(Project.class, project);
@@ -160,6 +164,7 @@ public class LoadConfigurationTask extends AbstractTask {
         build.setParent(null);
 
         loadExcludesTo(c, build);
+
         loadPluginsTo(c, build);
         loadBuildSubSections(c, config.getObject("build"), build);
     }
@@ -168,6 +173,11 @@ public class LoadConfigurationTask extends AbstractTask {
         List<BuildSection> children = new ArrayList<>();
 
         for (String subSectionName : configConfig.keySet()) {
+            // Don't load reserved names as subsections.
+            if (subSectionName.equalsIgnoreCase("exclude") || subSectionName.equalsIgnoreCase("plugins")) {
+                continue;
+            }
+
             Config c = config.getConfig(subSectionName);
             ConfigObject cc = config.getObject(subSectionName);
 
@@ -202,12 +212,14 @@ public class LoadConfigurationTask extends AbstractTask {
             }
 
             build.setPlugins(configurations);
+        } else {
+            build.setPlugins(new ArrayList<>(0));
         }
     }
 
     private void loadPluginConfigurationTo(Config config, String pluginExp, PluginConfiguration pluginConfiguration) {
         String name = pluginExp.contains(":") ? pluginExp.substring(0, pluginExp.indexOf(':')) : pluginExp;
-        String version = pluginExp.contains(":") ? pluginExp.substring(pluginExp.indexOf(':') + 1) : "latest";
+        String version = pluginExp.contains(":") ? pluginExp.substring(pluginExp.indexOf(':') + 1) : PluginVersion.NONE_VERSION;
 
         pluginConfiguration.setPluginName(name);
         pluginConfiguration.setPluginVersion(version);
@@ -225,6 +237,8 @@ public class LoadConfigurationTask extends AbstractTask {
                             .collect(Collectors.toList())
             );
             build.setExclude(filters);
+        } else {
+            build.setExclude(new ArrayList<>(0));
         }
     }
 

@@ -30,6 +30,7 @@ package eu.matejkormuth.rpbuild.tasks.build;
 
 import com.typesafe.config.Config;
 import eu.matejkormuth.rpbuild.Application;
+import eu.matejkormuth.rpbuild.Options;
 import eu.matejkormuth.rpbuild.annotations.Optional;
 import eu.matejkormuth.rpbuild.api.*;
 import eu.matejkormuth.rpbuild.exceptions.TaskException;
@@ -42,6 +43,7 @@ import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.PathMatcher;
+import java.util.ArrayList;
 import java.util.List;
 
 @Slf4j
@@ -59,8 +61,18 @@ public class CompileAndGenerateTask extends AbstractTask {
     }
 
     private void recurBuild(BuildSection section) {
+        // Find out the path of current working directory.
+        Path currentPath = section.getAbsolutePath();
+
         log.info("Recursively building section {}...", section.getName());
         // !We are visiting tree depth-first.
+
+        // Check if this section exists on filesystem.
+        if (!Files.exists(currentPath)) {
+            log.warn("Specified section {} does not exists in filesystem at {}! Skipping all subsections.",
+                    section.getName(), section.getAbsolutePath());
+            return;
+        }
 
         /*
          * First we traverse to the most specific declaration. We run plugins
@@ -71,10 +83,7 @@ public class CompileAndGenerateTask extends AbstractTask {
         section.getChildren().forEach(this::recurBuild);
 
         // Run GENERATE_BEFORE_LIST plugins.
-        runPlugins(section, PluginType.GENERATE_BEFORE_LIST, null, null);
-
-        // Find out the path of current working directory.
-        Path currentPath = section.getAbsolutePath();
+        runPlugins(section, PluginType.GENERATE_BEFORE_LIST, null, currentPath);
 
         // List files.
         ListFileExcludesVisitor visitor = new ListFileExcludesVisitor(section.getExclude());
@@ -92,7 +101,7 @@ public class CompileAndGenerateTask extends AbstractTask {
         runPlugins(section, PluginType.TRANSFORM_FILES, visitor.getFiles(), currentPath);
     }
 
-    private void runPlugins(BuildSection section, PluginType type, @Optional List<Path> files, @Optional Path currentPath) {
+    private void runPlugins(BuildSection section, PluginType type, @Optional List<Path> files, Path currentPath) {
         Application application = Application.resolve(Application.class);
 
         for (PluginConfiguration pConf : section.getPlugins()) {
@@ -100,6 +109,22 @@ public class CompileAndGenerateTask extends AbstractTask {
 
             if (plugin == null) {
                 throw new RuntimeException("Plugin was not loaded! Plugin: " + pConf.toString());
+            }
+
+            if (pConf.getConfiguration().hasPath("disable") && pConf.getConfiguration().getBoolean("disable")) {
+                log.info("Execution of plugin {} is disabled.", plugin.getName());
+                continue;
+            }
+
+            // Initialize plugin if needed.
+            if (!plugin.isInitialized()) {
+                try {
+                    plugin.initialize();
+                    plugin.setInitialized(true);
+                } catch (Exception e) {
+                    log.error("Can't initialize plugin {}!", plugin.getName());
+                    logPluginException(plugin, e);
+                }
             }
 
             // Run only plugins with right type.
@@ -134,26 +159,45 @@ public class CompileAndGenerateTask extends AbstractTask {
 
             // Open file, transform content, save file.
             try {
-                log.info(" Transforming file {}...", file);
-                fileCount++;
-
                 // Some plugins only use file path, so we better lazy load content
                 // to save resources.
                 OpenedFile openedFile = OpenedFile.lazyLoaded(file);
 
-                plugin.transform(configuration, openedFile);
+                try {
+                    plugin.transform(configuration, openedFile);
+                    log.info("{} transformed: {}", plugin.getName(), file);
+                    fileCount++;
+                } catch (Exception e) {
+                    logPluginException(plugin, e);
+                }
 
                 // Write only if file content has been changed.
                 if (openedFile.isDirty()) {
                     Files.write(file, openedFile.getData());
                 }
             } catch (IOException e) {
-                log.error("Can't read bytes from file " + file.toString(), e);
-                throw new TaskException("Can't read file " + file.toString(), e);
+                log.error("Can't read/write bytes from file " + file.toString(), e);
+                throw new TaskException("Can't read/write file " + file.toString(), e);
             }
         }
 
         log.info("Transformed {} files.", fileCount);
+    }
+
+    private void logPluginException(Plugin plugin, Exception e) {
+        // Perform intelligent exception logging to not spam logs with lots of stack traces.
+        plugin.incrementExceptionCount();
+
+        if (plugin.getExceptionCount() == 10) {
+            log.info("Plugin {} generated too many exceptions. Further stack traces will be hidden.", plugin.getName());
+            log.info("If you want to see all stack traces, please run rpbuild with --verbose (-v) option.");
+        }
+
+        if (plugin.getExceptionCount() < 10 || Application.resolve(Options.class).isVerbose()) {
+            log.error("Plugin " + plugin.getName() + " generated an exception: ", e);
+        } else {
+            log.error("Plugin " + plugin.getName() + " generated an exception: ", e.getMessage());
+        }
     }
 
     private void runGenerateAfter(List<Path> files, Path currentPath, Plugin plugin, Config configuration) {
@@ -162,11 +206,16 @@ public class CompileAndGenerateTask extends AbstractTask {
         int filesCount = 0;
 
         // Generate files.
-        List<OpenedFile> generatedFiles = plugin.generate(configuration, files);
+        List<OpenedFile> generatedFiles = new ArrayList<>();
+        try {
+            generatedFiles.addAll(plugin.generate(configuration, files));
+        } catch (Exception e) {
+            logPluginException(plugin, e);
+        }
 
         for (OpenedFile openedFile : generatedFiles) {
             filesCount++;
-            log.info(" Generated file: {}", openedFile.getName());
+            log.info(" {} generated: {}", plugin.getName(), openedFile.getName());
             processGeneratedFile(files, currentPath, openedFile);
         }
 
@@ -199,17 +248,32 @@ public class CompileAndGenerateTask extends AbstractTask {
      * @param configuration configuration
      */
     private void runGenerateBefore(Path currentPath, Plugin plugin, Config configuration) {
+        if (currentPath == null) {
+            throw new NullPointerException("currentPath can't be null!");
+        }
+
         log.info("Generating files with plugin {}...", plugin.getName());
 
         int files = 0;
 
-        List<OpenedFile> generatedFiles = plugin.generate(configuration);
+        List<OpenedFile> generatedFiles = new ArrayList<>();
+        try {
+            generatedFiles.addAll(plugin.generate(configuration));
+        } catch (Exception e) {
+            logPluginException(plugin, e);
+        }
 
         for (OpenedFile openedFile : generatedFiles) {
+
+            if (openedFile == null) {
+                log.warn("Plugin {} returned null as generated file! Please contact it's author about this!", plugin.getName());
+                continue;
+            }
+
             // Update absolute path.
             openedFile.setAbsolutePath(currentPath.resolve(openedFile.getName()));
 
-            log.info(" Generated file: {}", openedFile.getName());
+            log.info(" {} generated: {}", plugin.getName(), openedFile.getName());
 
             // Save.
             try {

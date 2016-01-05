@@ -161,6 +161,7 @@ public class Bootstrap {
         tasks.addLast(new GitPullTask());
         tasks.addLast(new MoveToTempDirectoryTask());
         tasks.addLast(new CompileAndGenerateTask());
+        tasks.addLast(new AssembleTask());
 
         Application application = new Application(options, tasks);
         application.run();

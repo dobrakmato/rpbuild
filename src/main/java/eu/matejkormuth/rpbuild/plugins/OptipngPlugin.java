@@ -47,7 +47,7 @@ import java.io.IOException;
         name = "rpbuild-optipng-plugin",
         author = "Matej Kormuth",
         version = "1.0",
-        description = "Provides png optimization with optipng. Acts as optipng wrapper.",
+        description = "OptiPNG wrapper as rpbuild plugin. Loselessly compresses PNGs.",
         options = {
                 @PluginOption(
                         name = "level",
@@ -60,6 +60,8 @@ public class OptipngPlugin extends Plugin {
     private static final String NAME = "rpbuild-optipng-plugin";
     private static final String VERSION = "1.0";
     private static final String AUTHOR = "Matej Kormuth";
+
+    private static final String WARN = "Uses original OptiPNG software by Cosmin Truta and the Contributing Authors.";
 
     @Override
     public String getName() {
@@ -77,8 +79,21 @@ public class OptipngPlugin extends Plugin {
     }
 
     @Override
+    public String getGlobPattern() {
+        return "**.png";
+    }
+
+    @Override
     public PluginType getType() {
         return PluginType.TRANSFORM_FILES;
+    }
+
+    @Override
+    public void initialize() {
+        // Print warn message.
+        log.info(WARN);
+
+        // Extract executables.
     }
 
     @Override
@@ -95,7 +110,10 @@ public class OptipngPlugin extends Plugin {
 
         // Start optipng process.
         try {
-            new ProcessBuilder("optipng", "-o" + optimizationLevel, file.getAbsolutePath().toString()).start().waitFor();
+            Process process = new ProcessBuilder("optipng", "-o" + optimizationLevel, "\"" + file.getAbsolutePath().toString() + "\"")
+                    .inheritIO()
+                    .start();
+            process.waitFor();
         } catch (InterruptedException | IOException e) {
             log.error("Error while executing optipng!", e);
         }

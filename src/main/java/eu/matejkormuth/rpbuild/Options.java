@@ -34,9 +34,11 @@ import lombok.Data;
 public class Options {
     private String file = "rpbuild.conf";
     private boolean autoUpdate = true;
+    private boolean verbose = false;
 
     public void parseArgs(Args args) {
         this.autoUpdate = args.hasFlag("--auto-update", "-au");
         this.autoUpdate = !args.hasFlag("--no-auto-update", "-nau");
+        this.verbose = args.hasFlag("--verbose", "-v");
     }
 }
