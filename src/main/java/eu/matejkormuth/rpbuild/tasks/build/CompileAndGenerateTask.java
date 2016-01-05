@@ -2,17 +2,17 @@
  * rpBuild 2 - Improved build system for Minecraft resource packs.
  * Copyright (c) 2015 - 2016, Matej Kormuth <http://www.github.com/dobrakmato>
  * All rights reserved.
- *
+ * <p>
  * Redistribution and use in source and binary forms, with or without modification,
  * are permitted provided that the following conditions are met:
- *
+ * <p>
  * 1. Redistributions of source code must retain the above copyright notice, this
  * list of conditions and the following disclaimer.
- *
+ * <p>
  * 2. Redistributions in binary form must reproduce the above copyright notice,
  * this list of conditions and the following disclaimer in the documentation and/or
  * other materials provided with the distribution.
- *
+ * <p>
  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS" AND
  * ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
  * WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
@@ -23,7 +23,7 @@
  * ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY, OR TORT
  * (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
  * SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
- *
+ * <p>
  * "Minecraft" is a trademark of Mojang AB
  */
 package eu.matejkormuth.rpbuild.tasks.build;
@@ -136,9 +136,17 @@ public class CompileAndGenerateTask extends AbstractTask {
             try {
                 log.info(" Transforming file {}...", file);
                 fileCount++;
-                OpenedFile openedFile = new OpenedFile(file, Files.readAllBytes(file));
+
+                // Some plugins only use file path, so we better lazy load content
+                // to save resources.
+                OpenedFile openedFile = OpenedFile.lazyLoaded(file);
+
                 plugin.transform(configuration, openedFile);
-                Files.write(file, openedFile.getData());
+
+                // Write only if file content has been changed.
+                if (openedFile.isDirty()) {
+                    Files.write(file, openedFile.getData());
+                }
             } catch (IOException e) {
                 log.error("Can't read bytes from file " + file.toString(), e);
                 throw new TaskException("Can't read file " + file.toString(), e);
