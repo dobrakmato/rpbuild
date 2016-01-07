@@ -91,6 +91,18 @@ public class AssembleTask extends AbstractTask {
         zipArchive.close();
 
         log.info("Archive built!");
+
+        long size = project.getTarget().toFile().length();
+        log.info("Size of final archive is: {} MB.", size / 1024 / 1024);
+        if (size > 1024 * 1024 * 50) {
+            log.warn("#################################");
+            log.warn("Size of the zip is greater then 50 MB!");
+            log.warn("That means, you will not be able to send this resource pack as server resource pack automatically!");
+            log.warn("This is limitation of Minecraft.");
+            log.warn("If you want to learn more: https://github.com/dobrakmato/rpbuild/wiki/abcdefghi");
+            log.warn("#################################");
+        }
+
     }
 
     private void recurCollectExcludes(BuildSection section, Map<Path, List<PathMatcher>> excludes, List<PathMatcher> parentExcludes) {

@@ -26,75 +26,72 @@
  *
  * "Minecraft" is a trademark of Mojang AB
  */
-package eu.matejkormuth.rpbuild.plugins;
+package eu.matejkormuth.rpbuild.concurrent;
 
 import com.typesafe.config.Config;
-import eu.matejkormuth.rpbuild.Application;
 import eu.matejkormuth.rpbuild.api.OpenedFile;
-import eu.matejkormuth.rpbuild.api.Plugin;
-import eu.matejkormuth.rpbuild.api.PluginType;
-import eu.matejkormuth.rpbuild.api.Project;
-import eu.matejkormuth.rpbuild.concurrent.Executable;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 import java.util.concurrent.LinkedBlockingQueue;
 
 /**
- * Minifies json files by removing whitespace.
+ * Provides support for multithreading.
  */
 @Slf4j
-public class JsonMinifyPlugin extends Plugin {
+public class Multithreading {
 
-    private static final String NAME = "rpbuild-jsonminify-plugin";
-    private static final String VERSION = "1.0";
-    private static final String AUTHOR = "Matej Kormuth";
+    /**
+     * Count of worker threads.
+     */
+    private final int workerCount;
 
-    @Override
-    public String getName() {
-        return NAME;
-    }
+    /**
+     * Template for worker thread name.
+     */
+    private final String workerName;
 
-    @Override
-    public String getVersion() {
-        return VERSION;
-    }
-
-    @Override
-    public String getAuthor() {
-        return AUTHOR;
-    }
-
-    @Override
-    public String getGlobPattern() {
-        return "**.json";
-    }
-
-    @Override
-    public PluginType getType() {
-        return PluginType.TRANSFORM_FILES;
-    }
-
-    @Override
-    public void transform(Config config, OpenedFile file) {
-        Project project = Application.resolve(Project.class);
-
-        file.setData(new String(file.getData(), project.getEncoding())
-                .replaceAll("\\s+", "").getBytes(project.getEncoding()));
-    }
-
-    private final int workerCount = 8;
-    private final String workerName = "JsonMinifyWorker-%d";
+    /**
+     * Workers.
+     */
     private Thread[] workers;
+
+    /**
+     * Work queue.
+     */
     private final LinkedBlockingQueue<Executable> queue = new LinkedBlockingQueue<>();
 
-    @Override
-    public void transformAll(Config config, List<OpenedFile> files) throws Exception {
+    /**
+     * Function used to transform one file.
+     */
+    private final Transformer transformer;
+
+    /**
+     * Creates new multithreading support with specified amount of worker threads and transformer function.
+     *
+     * @param workerCount amount of worker threads
+     * @param workerName  template for name of worker thread
+     * @param transformer function used to transform one file
+     */
+    public Multithreading(int workerCount, String workerName, Transformer transformer) {
+        this.workerCount = workerCount;
+        this.workerName = workerName;
+        this.transformer = transformer;
+    }
+
+    /**
+     * Processes all files in multiple threads.
+     *
+     * @param config config
+     * @param files  list of files
+     * @throws Exception when exception occurs
+     */
+    public void processAll(Config config, List<OpenedFile> files) throws Exception {
         // Fill the queue.
         for (OpenedFile file : files) {
             queue.offer(() -> {
                 // Do the work.
-                transform(config, file);
+                transformer.transform(config, file);
                 // Notify control thread.
                 synchronized (queue) {
                     if (queue.isEmpty())
@@ -123,20 +120,20 @@ public class JsonMinifyPlugin extends Plugin {
             }
         }
 
-        // Wait until done.
+        // Wait until queue is empty.
         synchronized (queue) {
             while (!queue.isEmpty())
                 queue.wait();
         }
 
-        // Destroy workers.
+        // Wait for workers to end.
         for (int i = 0; i < workerCount; i++) {
             if (workers[i] != null) {
-                if (workers[i].isAlive()) {
-                    workers[i].interrupt();
-                }
+                workers[i].join();
+                // We are sure that worker thread is already dead.
             }
             workers[i] = null;
         }
+        workers = null;
     }
 }

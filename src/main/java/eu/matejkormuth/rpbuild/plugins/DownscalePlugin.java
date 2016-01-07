@@ -32,8 +32,10 @@ import com.typesafe.config.Config;
 import eu.matejkormuth.rpbuild.api.OpenedFile;
 import eu.matejkormuth.rpbuild.api.Plugin;
 import eu.matejkormuth.rpbuild.api.PluginType;
+import eu.matejkormuth.rpbuild.concurrent.Executable;
 import eu.matejkormuth.rpbuild.exceptions.InvalidConfigurationException;
 import eu.matejkormuth.rpbuild.exceptions.TaskException;
+import lombok.extern.slf4j.Slf4j;
 
 import javax.imageio.ImageIO;
 import java.awt.geom.AffineTransform;
@@ -42,10 +44,13 @@ import java.awt.image.BufferedImage;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.util.List;
+import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Provides basic downscaling.
  */
+@Slf4j
 public class DownscalePlugin extends Plugin {
 
     private static final String NAME = "rpbuild-downscale-plugin";
@@ -76,6 +81,11 @@ public class DownscalePlugin extends Plugin {
     public String getGlobPattern() {
         return "**.{png,jpg}";
     }
+
+    private final int workerCount = 8;
+    private final String workerName = "DownscaleWorker-%d";
+    private Thread[] workers;
+    private final LinkedBlockingQueue<Executable> queue = new LinkedBlockingQueue<>();
 
     @Override
     public void transform(Config config, OpenedFile file) {
@@ -127,6 +137,58 @@ public class DownscalePlugin extends Plugin {
             throw new TaskException(e);
         }
 
+    }
+
+    @Override
+    public void transformAll(Config config, List<OpenedFile> files) throws Exception {
+        // Fill the queue.
+        for (OpenedFile file : files) {
+            queue.offer(() -> {
+                // Do the work.
+                transform(config, file);
+                // Notify control thread.
+                synchronized (queue) {
+                    if (queue.isEmpty())
+                        queue.notify();
+                }
+            });
+        }
+
+        // Spawn workers if not done already.
+        if (workers == null) {
+            workers = new Thread[workerCount];
+            for (int i = 0; i < workerCount; i++) {
+                workers[i] = new Thread(() -> {
+                    while (!queue.isEmpty()) {
+                        try {
+                            Executable executable = queue.take();
+                            executable.run();
+                        } catch (InterruptedException e) {
+                            // Be silent about this one.
+                        } catch (Exception e) {
+                            log.error("Exception in thread " + Thread.currentThread().getName(), e);
+                        }
+                    }
+                }, workerName.replace("%d", Integer.toString(i, 10)));
+                workers[i].start();
+            }
+        }
+
+        // Wait until done.
+        synchronized (queue) {
+            while (!queue.isEmpty())
+                queue.wait();
+        }
+
+        // Destroy workers.
+        for (int i = 0; i < workerCount; i++) {
+            if (workers[i] != null) {
+                if (workers[i].isAlive()) {
+                    workers[i].interrupt();
+                }
+            }
+            workers[i] = null;
+        }
     }
 
     private BufferedImage getScaledImage(BufferedImage image, int width,

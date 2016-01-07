@@ -99,6 +99,9 @@ public class CompileAndGenerateTask extends AbstractTask {
 
         // Run TRANSFORM_FILES plugins.
         runPlugins(section, PluginType.TRANSFORM_FILES, visitor.getFiles(), currentPath);
+
+        // Run TRANSFORM_ALL_FILES plugins.
+        runPlugins(section, PluginType.TRANSFORM_ALL_FILES, visitor.getFiles(), currentPath);
     }
 
     private void runPlugins(BuildSection section, PluginType type, @Optional List<Path> files, Path currentPath) {
@@ -154,7 +157,6 @@ public class CompileAndGenerateTask extends AbstractTask {
 
         log.info("Transforming files ({}) with plugin {}...", plugin.getGlobPattern(), plugin.getName());
 
-        int fileCount = 0;
         List<OpenedFile> openedFiles = new ArrayList<>(files.size());
 
         for (Path file : files) {
@@ -174,7 +176,6 @@ public class CompileAndGenerateTask extends AbstractTask {
             plugin.transformAll(configuration, openedFiles);
             plugin.getProfiler().end();
             log.info("{} transformed {} files!", plugin.getName(), openedFiles.size());
-            fileCount++;
         } catch (Exception e) {
             logPluginException(plugin, e);
         }
@@ -191,8 +192,6 @@ public class CompileAndGenerateTask extends AbstractTask {
                 }
             }
         }
-
-        log.info("Transformed {} files.", fileCount);
     }
 
     private void runTransform(List<Path> files, Plugin plugin, Config configuration) {
