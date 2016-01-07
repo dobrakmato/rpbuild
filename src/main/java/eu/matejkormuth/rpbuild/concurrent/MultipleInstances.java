@@ -26,7 +26,7 @@
  *
  * "Minecraft" is a trademark of Mojang AB
  */
-package eu.matejkormuth.rpbuild;
+package eu.matejkormuth.rpbuild.concurrent;
 
 import eu.matejkormuth.rpbuild.api.OpenedFile;
 

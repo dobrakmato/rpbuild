@@ -144,4 +144,8 @@ public abstract class Plugin {
     public void transform(Config config, OpenedFile file) throws Exception {
         throw new UnsupportedOperationException("Not yet implemented!");
     }
+
+    public void transformAll(Config config, List<OpenedFile> file) throws Exception {
+        throw new UnsupportedOperationException("Not yet implemented!");
+    }
 }

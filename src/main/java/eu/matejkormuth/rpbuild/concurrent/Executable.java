@@ -26,7 +26,7 @@
  *
  * "Minecraft" is a trademark of Mojang AB
  */
-package eu.matejkormuth.rpbuild;
+package eu.matejkormuth.rpbuild.concurrent;
 
 @FunctionalInterface
 public interface Executable {

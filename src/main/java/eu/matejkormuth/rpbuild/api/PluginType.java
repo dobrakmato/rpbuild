@@ -47,5 +47,11 @@ public enum PluginType {
      * Transforms the content of each file. No new file(s) are
      * created, neither names are changed.
      */
-    TRANSFORM_FILES
+    TRANSFORM_FILES,
+
+    /**
+     * Transforms all files in one transformAll call. No new
+     * files(s) are created, neither names are changed.
+     */
+    TRANSFORM_ALL_FILES
 }

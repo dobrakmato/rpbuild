@@ -140,10 +140,59 @@ public class CompileAndGenerateTask extends AbstractTask {
                     case TRANSFORM_FILES:
                         runTransform(files, plugin, pConf.getConfiguration());
                         break;
+                    case TRANSFORM_ALL_FILES:
+                        runTransformAll(files, plugin, pConf.getConfiguration());
+                        break;
                 }
             }
 
         }
+    }
+
+    private void runTransformAll(List<Path> files, Plugin plugin, Config configuration) {
+        PathMatcher matcher = FileSystems.getDefault().getPathMatcher("glob:" + plugin.getGlobPattern());
+
+        log.info("Transforming files ({}) with plugin {}...", plugin.getGlobPattern(), plugin.getName());
+
+        int fileCount = 0;
+        List<OpenedFile> openedFiles = new ArrayList<>(files.size());
+
+        for (Path file : files) {
+            if (!matcher.matches(file)) {
+                continue;
+            }
+
+            // Some plugins only use file path, so we better lazy load content
+            // to save resources.
+            OpenedFile openedFile = OpenedFile.lazyLoaded(file);
+            openedFiles.add(openedFile);
+        }
+
+        // Process all files in one call.
+        try {
+            plugin.getProfiler().begin();
+            plugin.transformAll(configuration, openedFiles);
+            plugin.getProfiler().end();
+            log.info("{} transformed {} files!", plugin.getName(), openedFiles.size());
+            fileCount++;
+        } catch (Exception e) {
+            logPluginException(plugin, e);
+        }
+
+        // Write changed files.
+        for (OpenedFile openedFile : openedFiles) {
+            // Write only if file content has been changed.
+            if (openedFile.isDirty()) {
+                try {
+                    Files.write(openedFile.getAbsolutePath(), openedFile.getData());
+                } catch (IOException e) {
+                    log.error("Can't read/write bytes from file " + openedFile.getAbsolutePath().toString(), e);
+                    throw new TaskException("Can't read/write file " + openedFile.getAbsolutePath().toString(), e);
+                }
+            }
+        }
+
+        log.info("Transformed {} files.", fileCount);
     }
 
     private void runTransform(List<Path> files, Plugin plugin, Config configuration) {
