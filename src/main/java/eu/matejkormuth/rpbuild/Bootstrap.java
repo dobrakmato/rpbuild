@@ -154,6 +154,7 @@ public class Bootstrap {
 
         Options options = new Options();
         options.setFile(fileName);
+        options.parseArgs(args);
 
         LinkedList<AbstractTask> tasks = new LinkedList<>();
         tasks.addLast(new LoadConfigurationTask());

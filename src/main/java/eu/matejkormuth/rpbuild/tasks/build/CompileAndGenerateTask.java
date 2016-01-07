@@ -120,6 +120,7 @@ public class CompileAndGenerateTask extends AbstractTask {
             if (!plugin.isInitialized()) {
                 try {
                     plugin.initialize();
+                    plugin.setProfiler(getProfiler().createChild(plugin.getName()));
                     plugin.setInitialized(true);
                 } catch (Exception e) {
                     log.error("Can't initialize plugin {}!", plugin.getName());
@@ -164,7 +165,9 @@ public class CompileAndGenerateTask extends AbstractTask {
                 OpenedFile openedFile = OpenedFile.lazyLoaded(file);
 
                 try {
+                    plugin.getProfiler().begin();
                     plugin.transform(configuration, openedFile);
+                    plugin.getProfiler().end();
                     log.info("{} transformed: {}", plugin.getName(), file);
                     fileCount++;
                 } catch (Exception e) {
@@ -208,7 +211,9 @@ public class CompileAndGenerateTask extends AbstractTask {
         // Generate files.
         List<OpenedFile> generatedFiles = new ArrayList<>();
         try {
+            plugin.getProfiler().begin();
             generatedFiles.addAll(plugin.generate(configuration, files));
+            plugin.getProfiler().end();
         } catch (Exception e) {
             logPluginException(plugin, e);
         }
@@ -258,7 +263,9 @@ public class CompileAndGenerateTask extends AbstractTask {
 
         List<OpenedFile> generatedFiles = new ArrayList<>();
         try {
+            plugin.getProfiler().begin();
             generatedFiles.addAll(plugin.generate(configuration));
+            plugin.getProfiler().end();
         } catch (Exception e) {
             logPluginException(plugin, e);
         }

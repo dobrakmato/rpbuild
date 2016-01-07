@@ -29,6 +29,7 @@
 package eu.matejkormuth.rpbuild.api;
 
 import com.typesafe.config.Config;
+import eu.matejkormuth.rpbuild.profiler.Profiler;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -83,6 +84,13 @@ public abstract class Plugin {
     @Getter
     @Setter
     private boolean initialized = false;
+
+    /**
+     * Profiler of this plugin.
+     */
+    @Getter
+    @Setter
+    private Profiler profiler;
 
     /**
      * Represents number of exceptions this plugin has generated.

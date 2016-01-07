@@ -29,7 +29,9 @@
 package eu.matejkormuth.rpbuild;
 
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 
+@Slf4j
 @Data
 public class Options {
     private String file = "rpbuild.conf";
@@ -40,5 +42,9 @@ public class Options {
         this.autoUpdate = args.hasFlag("--auto-update", "-au");
         this.autoUpdate = !args.hasFlag("--no-auto-update", "-nau");
         this.verbose = args.hasFlag("--verbose", "-v");
+
+        if (this.verbose) {
+            log.info("Verbose mode: on");
+        }
     }
 }

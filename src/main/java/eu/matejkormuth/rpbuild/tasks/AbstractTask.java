@@ -29,6 +29,9 @@
 package eu.matejkormuth.rpbuild.tasks;
 
 import eu.matejkormuth.rpbuild.UnsafeUtils;
+import eu.matejkormuth.rpbuild.profiler.Profiler;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -73,7 +76,15 @@ public abstract class AbstractTask {
     }
 
     /**
+     * Profiler of this task.
+     */
+    @Getter
+    @Setter
+    private Profiler profiler;
+
+    /**
      * Runs this task.
      */
     public abstract void run();
+
 }

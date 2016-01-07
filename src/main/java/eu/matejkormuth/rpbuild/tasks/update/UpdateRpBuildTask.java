@@ -67,7 +67,7 @@ public class UpdateRpBuildTask extends AbstractTask {
         if (Files.notExists(application.getRpBuildPath()) || Files.notExists(application.getRpBuildGuiPath())) {
             log.error("Can't update! Nothing to update!");
             log.info("Did you run `rpbuild install` first?");
-            throw new TaskException("Nothing is installed, nothing to update!");
+            return;
         }
 
         log.info("Checking for updates...");

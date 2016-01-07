@@ -127,6 +127,8 @@ public class CollectPluginsTask extends AbstractTask {
     private boolean downloadPlugin(Project project, Repository localRepository, PluginVersion pluginVersion) {
         boolean success = false;
         for (Repository repository : project.getRepositories()) {
+            log.info("Checking repository: {}", repository.getName());
+
             if (repository.hasPlugin(pluginVersion)) {
                 // Download to local repository.
                 success = repository.downloadToLocal(pluginVersion);

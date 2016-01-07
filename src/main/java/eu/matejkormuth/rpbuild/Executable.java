@@ -26,31 +26,9 @@
  *
  * "Minecraft" is a trademark of Mojang AB
  */
-package eu.matejkormuth.rpbuild.annotations;
+package eu.matejkormuth.rpbuild;
 
-import java.lang.annotation.Retention;
-import java.lang.annotation.RetentionPolicy;
-
-@Retention(RetentionPolicy.RUNTIME)
-public @interface PluginOption {
-    String name();
-
-    Type type() default Type.OTHER;
-
-    String decription();
-
-    enum Type {
-        BOOLEAN,
-        BYTE,
-        SHORT,
-        CHAR,
-        INT,
-        LONG,
-        FLOAT,
-        DOUBLE,
-        STRING,
-        LIST,
-        OBJECT,
-        OTHER
-    }
+@FunctionalInterface
+public interface Executable {
+    void run() throws Exception;
 }

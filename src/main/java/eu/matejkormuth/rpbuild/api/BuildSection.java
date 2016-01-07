@@ -65,6 +65,7 @@ public class BuildSection {
      * Children sections (sub-directory selects).
      */
     private List<BuildSection> children;
+    private Object project;
 
     /**
      * Returns absolute path to this build section on disk drive.

@@ -35,8 +35,8 @@ import eu.matejkormuth.rpbuild.api.Repository;
 import eu.matejkormuth.rpbuild.exceptions.TaskException;
 import eu.matejkormuth.rpbuild.plugins.DownscalePlugin;
 import eu.matejkormuth.rpbuild.plugins.JsonMinifyPlugin;
-import eu.matejkormuth.rpbuild.plugins.OptipngPlugin;
 import eu.matejkormuth.rpbuild.plugins.PackMcMetaPlugin;
+import eu.matejkormuth.rpbuild.profiler.Profiler;
 import eu.matejkormuth.rpbuild.tasks.AbstractTask;
 import eu.matejkormuth.rpbuild.tasks.update.UpdateRpBuildTask;
 import lombok.Getter;
@@ -127,9 +127,13 @@ public class Application {
     @Getter
     private Options options;
 
+    @Getter
+    private Profiler profiler = new Profiler("root");
+
     public Application(Options options, LinkedList<AbstractTask> tasks) {
         store(Application.class, this);
         store(Options.class, options);
+        store(Profiler.class, profiler);
 
         // Print short application intro.
         printIntro();
@@ -215,8 +219,6 @@ public class Application {
         addPlugin(new LoadedPlugin(getClass().getClassLoader(), new JsonMinifyPlugin()));
         addPlugin(new LoadedPlugin(getClass().getClassLoader(), new PackMcMetaPlugin()));
 
-        addPlugin(new LoadedPlugin(getClass().getClassLoader(), new OptipngPlugin()));
-
         log.info("There are {} bundled plugins in this version of rpbuild.", this.plugins.size());
     }
 
@@ -280,12 +282,16 @@ public class Application {
     public void run() {
 
         log.info("Starting rpbuild...");
+        profiler.begin();
         long startTime = System.currentTimeMillis();
 
         for (AbstractTask task : tasks) {
             printLineStrCentered(task.getClass().getSimpleName());
             try {
+                task.setProfiler(profiler.createChild(task.getClass().getSimpleName()));
+                task.getProfiler().begin();
                 task.run();
+                task.getProfiler().end();
             } catch (TaskException e) {
                 log.error("Can't complete build: " + e.getMessage());
                 log.error("There is a problem with *this* build! Please check plugins and configuration.", e);
@@ -307,6 +313,9 @@ public class Application {
             }
             printLine();
         }
+        profiler.end();
+        log.info("Profiler results: ");
+        log.info("\n" + profiler.generateReport());
 
         printLine();
         printBuildSuccess(startTime);

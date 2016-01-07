@@ -34,7 +34,9 @@ import eu.matejkormuth.rpbuild.exceptions.TaskException;
 import eu.matejkormuth.rpbuild.tasks.AbstractTask;
 import lombok.extern.slf4j.Slf4j;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.nio.file.Files;
 import java.nio.file.Path;
 
@@ -81,24 +83,17 @@ public class GitPullTask extends AbstractTask {
 
         // Destroy local changes.
         log.info("Executing: git stash save --keep-index.");
-        Runtime.getRuntime().exec("git stash save --keep-index").waitFor();
+        execute("git stash save --keep-index");
         log.info("Executing: git stash drop.");
-        Runtime.getRuntime().exec("git stash drop").waitFor();
+        execute("git stash drop");
 
         // Switch branch.
         log.info("Executing: git branch {}.", branch);
-        Runtime.getRuntime().exec("git branch " + branch).waitFor();
+        execute("git branch " + branch);
 
         // Pull.
         log.info("Pulling changes...");
-        Process gitProcess = Runtime.getRuntime().exec("git pull");
-        int exitCode = gitProcess.waitFor();
-        if (exitCode != 0) {
-            log.warn("Git process exited with exit code {}.", exitCode);
-            log.warn("This might be a problem! If your resource pack is built incorrectly, try running git pull by yourself.");
-        } else {
-            log.info("Git process exited with exit code {}.", exitCode);
-        }
+        execute("git pull");
     }
 
     /**
@@ -118,13 +113,42 @@ public class GitPullTask extends AbstractTask {
         log.info("Cloning git repository from {}...", url);
         String cmd = "git clone -b \"" + branch + "\" --single-branch \"" + url + "\" .";
         log.info("Executing: {}.", cmd);
-        Process gitProcess = Runtime.getRuntime().exec(cmd);
-        int exitCode = gitProcess.waitFor();
-        if (exitCode != 0) {
-            log.warn("Git process exited with exit code {}.", exitCode);
-            log.warn("This might be a problem! If your resource pack is built incorrectly, try running git clone by yourself.");
-        } else {
-            log.info("Git process exited with exit code {}.", exitCode);
+        execute(cmd);
+    }
+
+    /**
+     * Executes specified command and writes output to log.
+     *
+     * @param cmd command(s)
+     */
+    private static void execute(String cmd) {
+        Project project = Application.resolve(Project.class);
+
+        BufferedReader reader = null;
+        try {
+            Process process = new ProcessBuilder(cmd.split(" "))
+                    .directory(project.getSource().toFile())
+                    .redirectErrorStream(true)
+                    .start();
+
+            // Read process output.
+            reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
+            String line;
+            while ((line = reader.readLine()) != null) {
+                log.info(" > {}", line);
+            }
+            reader.close();
+
+        } catch (Exception e) {
+            log.error("Error while executing '" + cmd + "'!", e);
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    // Be silent.
+                }
+            }
         }
     }
 }

@@ -149,6 +149,17 @@ public class LoadConfigurationTask extends AbstractTask {
         BuildSection build = new BuildSection();
         loadBuildTo(c, build);
         project.setBuild(build);
+
+        // Fix .git ignore.
+        if (git.isIgnoreGitFolders()) {
+            recurAddExclude(build, "**/.git");
+            recurAddExclude(build, "**/.git/**");
+        }
+    }
+
+    private void recurAddExclude(BuildSection build, String s) {
+        build.getExclude().add(FileSystems.getDefault().getPathMatcher("glob:" + s));
+        build.getChildren().stream().forEach((section) -> recurAddExclude(section, s));
     }
 
     /**

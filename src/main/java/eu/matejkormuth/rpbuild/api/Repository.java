@@ -64,8 +64,9 @@ public class Repository {
      */
     public boolean hasPlugin(PluginVersion pluginVersion) {
         try {
-            HttpURLConnection con = (HttpURLConnection) new URL(url.toString() + "/" + makePath(pluginVersion))
+            HttpURLConnection con = (HttpURLConnection) new URL(url.toString() + "/" + makePath(pluginVersion) + "?random=" + Math.random())
                     .openConnection();
+            con.setRequestProperty("User-Agent", "Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_5_8; en-US) AppleWebKit/532.5 (KHTML, like Gecko) Chrome/4.0.249.0 Safari/532.5");
             con.setRequestMethod("HEAD");
             return (con.getResponseCode() == HttpURLConnection.HTTP_OK);
         } catch (Exception e) {

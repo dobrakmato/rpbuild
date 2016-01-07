@@ -28,27 +28,41 @@
  */
 package eu.matejkormuth.rpbuild.nio;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.IOException;
-import java.nio.file.FileVisitResult;
-import java.nio.file.Files;
-import java.nio.file.Path;
-import java.nio.file.SimpleFileVisitor;
+import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
+import java.util.List;
 
 /**
- * Copies all files from one directory to another recursively.
+ * Copies all files from one directory to another recursively while applying exclude filters..
  */
+@Slf4j
 public class CopyFileVisitor extends SimpleFileVisitor<Path> {
     private final Path targetPath;
     private Path sourcePath = null;
 
-    public CopyFileVisitor(Path targetPath) {
+    public CopyFileVisitor(Path targetPath, List<PathMatcher> excludeFilters) {
         this.targetPath = targetPath;
+        this.excludeFilters = excludeFilters;
     }
+
+    /**
+     * List of all exclude filters.
+     */
+    private final List<PathMatcher> excludeFilters;
 
     @Override
     public FileVisitResult preVisitDirectory(final Path dir,
                                              final BasicFileAttributes attrs) throws IOException {
+        for (int i = 0; i < excludeFilters.size(); i++) {
+            if (excludeFilters.get(i).matches(dir)) {
+                // If the filter is triggered, continue to next file without adding.
+                return FileVisitResult.CONTINUE;
+            }
+        }
+
         if (sourcePath == null) {
             sourcePath = dir;
         } else {
@@ -61,8 +75,18 @@ public class CopyFileVisitor extends SimpleFileVisitor<Path> {
     @Override
     public FileVisitResult visitFile(final Path file,
                                      final BasicFileAttributes attrs) throws IOException {
-        Files.copy(file,
-                targetPath.resolve(sourcePath.relativize(file)));
+        for (int i = 0; i < excludeFilters.size(); i++) {
+            if (excludeFilters.get(i).matches(file)) {
+                // If the filter is triggered, continue to next file without adding.
+                return FileVisitResult.CONTINUE;
+            }
+        }
+        try {
+            Files.copy(file,
+                    targetPath.resolve(sourcePath.relativize(file)));
+        } catch (Exception e) {
+            log.error("Can't copy file {} due to {}!", file, e.getMessage());
+        }
         return FileVisitResult.CONTINUE;
     }
 }

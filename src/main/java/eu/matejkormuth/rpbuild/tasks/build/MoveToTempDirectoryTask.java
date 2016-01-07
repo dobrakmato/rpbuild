@@ -36,8 +36,11 @@ import eu.matejkormuth.rpbuild.tasks.AbstractTask;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.IOException;
+import java.nio.file.FileSystems;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.PathMatcher;
+import java.util.ArrayList;
 
 /**
  * Moves files from working directory to temporary directory.
@@ -60,9 +63,16 @@ public class MoveToTempDirectoryTask extends AbstractTask {
         final Path originalSource = project.getSource();
         final Path newSource = tempDirectory;
 
+        // Only exclude .git if wanted. We don't want ot complicate this, just copy all stuff.
+        ArrayList<PathMatcher> excludes = new ArrayList<>(1);
+        if(project.getGit() != null && project.getGit().isIgnoreGitFolders()) {
+            excludes.add(FileSystems.getDefault().getPathMatcher("glob:**/.git"));
+            excludes.add(FileSystems.getDefault().getPathMatcher("glob:**/.git/**"));
+        }
+
         log.info("Copying files...");
         try {
-            Files.walkFileTree(originalSource, new CopyFileVisitor(newSource));
+            Files.walkFileTree(originalSource, new CopyFileVisitor(newSource, excludes));
         } catch (IOException e) {
             throw new TaskException(e);
         }
