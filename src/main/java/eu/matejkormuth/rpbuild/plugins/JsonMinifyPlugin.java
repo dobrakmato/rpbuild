@@ -34,11 +34,10 @@ import eu.matejkormuth.rpbuild.api.OpenedFile;
 import eu.matejkormuth.rpbuild.api.Plugin;
 import eu.matejkormuth.rpbuild.api.PluginType;
 import eu.matejkormuth.rpbuild.api.Project;
-import eu.matejkormuth.rpbuild.concurrent.Executable;
+import eu.matejkormuth.rpbuild.concurrent.Multithreading;
 import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
-import java.util.concurrent.LinkedBlockingQueue;
 
 /**
  * Minifies json files by removing whitespace.
@@ -72,7 +71,7 @@ public class JsonMinifyPlugin extends Plugin {
 
     @Override
     public PluginType getType() {
-        return PluginType.TRANSFORM_FILES;
+        return PluginType.TRANSFORM_ALL_FILES;
     }
 
     @Override
@@ -83,60 +82,10 @@ public class JsonMinifyPlugin extends Plugin {
                 .replaceAll("\\s+", "").getBytes(project.getEncoding()));
     }
 
-    private final int workerCount = 8;
-    private final String workerName = "JsonMinifyWorker-%d";
-    private Thread[] workers;
-    private final LinkedBlockingQueue<Executable> queue = new LinkedBlockingQueue<>();
+    private final Multithreading multithreading = new Multithreading(8, "JsonMinifyWorker-%d", this::transform);
 
     @Override
     public void transformAll(Config config, List<OpenedFile> files) throws Exception {
-        // Fill the queue.
-        for (OpenedFile file : files) {
-            queue.offer(() -> {
-                // Do the work.
-                transform(config, file);
-                // Notify control thread.
-                synchronized (queue) {
-                    if (queue.isEmpty())
-                        queue.notify();
-                }
-            });
-        }
-
-        // Spawn workers if not done already.
-        if (workers == null) {
-            workers = new Thread[workerCount];
-            for (int i = 0; i < workerCount; i++) {
-                workers[i] = new Thread(() -> {
-                    while (!queue.isEmpty()) {
-                        try {
-                            Executable executable = queue.take();
-                            executable.run();
-                        } catch (InterruptedException e) {
-                            // Be silent about this one.
-                        } catch (Exception e) {
-                            log.error("Exception in thread " + Thread.currentThread().getName(), e);
-                        }
-                    }
-                }, workerName.replace("%d", Integer.toString(i, 10)));
-                workers[i].start();
-            }
-        }
-
-        // Wait until done.
-        synchronized (queue) {
-            while (!queue.isEmpty())
-                queue.wait();
-        }
-
-        // Destroy workers.
-        for (int i = 0; i < workerCount; i++) {
-            if (workers[i] != null) {
-                if (workers[i].isAlive()) {
-                    workers[i].interrupt();
-                }
-            }
-            workers[i] = null;
-        }
+       multithreading.processAll(config, files);
     }
 }
