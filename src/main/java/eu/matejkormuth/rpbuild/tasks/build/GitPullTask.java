@@ -88,8 +88,8 @@ public class GitPullTask extends AbstractTask {
         execute("git stash drop");
 
         // Switch branch.
-        log.info("Executing: git branch {}.", branch);
-        execute("git branch " + branch);
+        log.info("Executing: git checkout {}.", branch);
+        execute("git checkout " + branch);
 
         // Pull.
         log.info("Pulling changes...");
