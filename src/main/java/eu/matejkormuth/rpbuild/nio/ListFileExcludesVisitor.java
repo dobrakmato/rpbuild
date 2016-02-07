@@ -28,6 +28,8 @@
  */
 package eu.matejkormuth.rpbuild.nio;
 
+import lombok.extern.slf4j.Slf4j;
+
 import java.io.IOException;
 import java.nio.file.FileVisitResult;
 import java.nio.file.Path;
@@ -40,6 +42,7 @@ import java.util.List;
 /**
  * Lists files in directory recursively while applying exclude filters.
  */
+@Slf4j
 public class ListFileExcludesVisitor extends SimpleFileVisitor<Path> {
 
     /**
@@ -66,6 +69,7 @@ public class ListFileExcludesVisitor extends SimpleFileVisitor<Path> {
         // this is the fastest method to access each element. Do not change to streams or something.
         for (int i = 0; i < excludeFilters.size(); i++) {
             if (excludeFilters.get(i).matches(file)) {
+                log.info("File {} is skipped!", file);
                 // If the filter is triggered, continue to next file without adding.
                 return FileVisitResult.CONTINUE;
             }

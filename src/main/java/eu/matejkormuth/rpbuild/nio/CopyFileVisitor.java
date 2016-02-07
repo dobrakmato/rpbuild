@@ -58,16 +58,16 @@ public class CopyFileVisitor extends SimpleFileVisitor<Path> {
                                              final BasicFileAttributes attrs) throws IOException {
         for (int i = 0; i < excludeFilters.size(); i++) {
             if (excludeFilters.get(i).matches(dir)) {
+                log.info("Skipping copy of {} because it matches {}.", dir, excludeFilters.get(i));
                 // If the filter is triggered, continue to next file without adding.
-                return FileVisitResult.CONTINUE;
+                return FileVisitResult.SKIP_SUBTREE;
             }
         }
 
         if (sourcePath == null) {
             sourcePath = dir;
         } else {
-            Files.createDirectories(targetPath.resolve(sourcePath
-                    .relativize(dir)));
+            Files.createDirectories(targetPath.resolve(sourcePath.relativize(dir)));
         }
         return FileVisitResult.CONTINUE;
     }
@@ -82,8 +82,7 @@ public class CopyFileVisitor extends SimpleFileVisitor<Path> {
             }
         }
         try {
-            Files.copy(file,
-                    targetPath.resolve(sourcePath.relativize(file)));
+            Files.copy(file, targetPath.resolve(sourcePath.relativize(file)));
         } catch (Exception e) {
             log.error("Can't copy file {} due to {}!", file, e.getMessage());
         }

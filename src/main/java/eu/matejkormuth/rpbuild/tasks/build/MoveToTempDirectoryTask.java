@@ -79,7 +79,9 @@ public class MoveToTempDirectoryTask extends AbstractTask {
 
         log.info("Done! Updating project source.");
         // Update source directory in project object.
+        log.info("Old source: {}", project.getSource());
         project.setSource(newSource);
+        log.info("New source: {}", project.getSource());
     }
 
     /**

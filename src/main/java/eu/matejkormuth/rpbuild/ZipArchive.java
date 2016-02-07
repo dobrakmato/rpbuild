@@ -79,7 +79,7 @@ public class ZipArchive {
         log.debug("Adding file: {}", path);
 
         ZipEntry entry = new ZipEntry(this.absolute.relativize(
-                path.toAbsolutePath()).toString());
+                path.toAbsolutePath()).toString().replace("\\", "/"));
 
         this.stream.putNextEntry(entry);
         this.stream.write(Files.readAllBytes(path));

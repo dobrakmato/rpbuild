@@ -45,6 +45,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * Assembles the files to one archive.
@@ -78,6 +79,8 @@ public class AssembleTask extends AbstractTask {
         ZipArchive zipArchive = new ZipArchive(project.getSource(),
                 project.getTarget().toFile(), project.getCompress().getLevel());
 
+        log.info("Relativizion path: {}", project.getSource());
+
         // Add all files to zip.
         for (Path file : files) {
             try {
@@ -97,7 +100,7 @@ public class AssembleTask extends AbstractTask {
         if (size > 1024 * 1024 * 50) {
             log.warn("#################################");
             log.warn("Size of the zip is greater then 50 MB!");
-            log.warn("That means, you will not be able to send this resource pack as server resource pack automatically!");
+            log.warn("This means, you will not be able to send this resource pack as server resource pack automatically!");
             log.warn("This is limitation of Minecraft.");
             log.warn("If you want to learn more: https://github.com/dobrakmato/rpbuild/wiki/abcdefghi");
             log.warn("#################################");
@@ -129,15 +132,26 @@ public class AssembleTask extends AbstractTask {
             localExcludes = new ArrayList<>(0);
         }
 
+
+        log.info("Listing files of {} with {} filters.", directory, localExcludes.size());
+        log.info("Filters: {}", localExcludes.stream().map(pathMatcher -> pathMatcher.toString()).collect(Collectors.joining()));
+
+        final int[] in = {0};
+        final int[] out = {0};
+
         // Get entries in current directory **excluded by filters**.
         DirectoryStream<Path> entries = Files.newDirectoryStream(directory, entry -> {
             for (PathMatcher filter : localExcludes) {
                 if (filter.matches(entry)) {
+                    out[0] = out[0] + 1;
                     return false;
                 }
             }
+            in[0] = in[0] + 1;
             return true;
         });
+
+        log.info("Files: {} in / {} out / {} total", in[0], out[0], in[0] + out[0]);
 
         for (Path entry : entries) {
             if (Files.isDirectory(entry)) {
